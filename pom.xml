@@ -14,7 +14,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Clase con el main: cambiadla si la llamáis distinto -->
-        <exec.mainClass>com.projecte1.server.Main</exec.mainClass>
+        <exec.mainClass>com.projecte.server.WsServer</exec.mainClass>
     </properties>
 
     <dependencies>
