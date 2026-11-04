@@ -1,5 +1,6 @@
 # Maven
 target/
+data/E*.json
 
 # IDEs
 .idea/

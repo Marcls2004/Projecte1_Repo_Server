@@ -51,7 +51,10 @@ public class ServerCliente {
 
                 // Construimos el JSON según lo que pide el enunciado
                 String jsonToSend = "";
-                if (input.equals("ping") || input.equals("getEsdeveniments") || input.equals("bounce")) {
+                if (input.startsWith("{")) {
+                    // Ja és un JSON complet (p. ex. una compra): l'enviem tal qual
+                    jsonToSend = input;
+                } else if (input.equals("ping") || input.equals("getEsdeveniments") || input.equals("bounce")) {
                     jsonToSend = "{\"type\":\"" + input + "\"}";
                 } else {
                     // Por defecto envía el tipo personalizado o texto libre
