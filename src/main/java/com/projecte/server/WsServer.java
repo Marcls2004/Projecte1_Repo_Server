@@ -23,7 +23,7 @@ public class WsServer extends WebSocketServer {
     
     public static void main(String[] args) throws InterruptedException, IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        int port = 8888;
+        int port = 80;
         boolean running = true;
 
         WsServer socket = new WsServer(port);
