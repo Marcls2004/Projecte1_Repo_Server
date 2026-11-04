@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Random;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -16,6 +19,7 @@ import org.json.JSONObject;
 public class WsServer extends WebSocketServer {
 
     private Cataleg cataleg;
+    private Random random = new Random();
     
     public static void main(String[] args) throws InterruptedException, IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -73,12 +77,9 @@ public class WsServer extends WebSocketServer {
         JSONObject peticio;
         try {
             peticio = new JSONObject(message);
-            System.err.println("Mensaje recibido: " + peticio.toString());
+            System.out.println("Mensaje recibido: " + peticio.toString());
         } catch (JSONException e) {
-            JSONObject error = new JSONObject();
-            error.put("type", "error");
-            error.put("message", "El missatge no és JSON valid");
-            conn.send(error.toString());
+            enviarError(conn, "El missatge no és JSON valid");
             return;
         }
 
@@ -93,20 +94,16 @@ public class WsServer extends WebSocketServer {
             conn.send(peticio.toString());
         } else if (type.equals("getEsdeveniments")) {
             if (cataleg == null) {
-                JSONObject error = new JSONObject();
-                error.put("type", "error");
-                error.put("message", "El catàleg no s'ha carregat correctament");
-                 conn.send(error.toString());
+                enviarError(conn, "El catàleg no s'ha carregat correctament");
             } else {
                 resposta.put("type", "esdeveniments");
                 resposta.put("data", construirLlistaEsdeveniments());
                 conn.send(resposta.toString());
             }
+        } else if (type.equals("comprar")) {
+            processarCompra(conn, peticio);
         } else {
-            JSONObject error = new JSONObject();
-            error.put("type", "error");
-            error.put("message", "Tipus desconegut: " + type);
-            conn.send(error.toString());
+            enviarError(conn, "Tipus desconegut: " + type);
         }
     }
 
@@ -168,5 +165,84 @@ public class WsServer extends WebSocketServer {
             jLlistaEsdeveniments.put(jEsde);
         }
         return jLlistaEsdeveniments;
+    }
+
+    private void processarCompra(WebSocket conn, JSONObject peticio) {
+        String nom = peticio.optString("nom");
+        String correu = peticio.optString("correu");
+        JSONArray entrades = peticio.optJSONArray("entrades");
+ 
+        if (entrades == null) {
+            enviarError(conn, "No hi ha entrades a la cistella");
+            return;
+        }
+ 
+        // Comprovem que totes les entrades existeixen i que en queden prou
+        for (int i = 0; i < entrades.length(); i++) {
+            JSONObject linia = entrades.getJSONObject(i);
+            Esdeveniment esde = cataleg.getEsdeveniment(linia.optString("idEsdeveniment"));
+            TipusEntrada tipus = null;
+
+            if (esde != null) {
+                tipus = esde.getTipusEntrada(linia.optString("idTipus"));
+            }
+ 
+            if (tipus == null || linia.optInt("quantitat") > tipus.getQuota()) {
+                enviarError(conn, "No es poden reservar les entrades");
+                return;
+            }
+        }
+ 
+        // Reservem: un localitzador per entrada, desat a <id_esdeveniment>.json
+        JSONArray localitzadors = new JSONArray();
+        try {
+            for (int i = 0; i < entrades.length(); i++) {
+                JSONObject linia = entrades.getJSONObject(i);
+                String idEsde = linia.getString("idEsdeveniment");
+                TipusEntrada tipus = cataleg.getEsdeveniment(idEsde).getTipusEntrada(linia.getString("idTipus"));
+                int quantitat = linia.getInt("quantitat");
+ 
+                tipus.restarQuota(quantitat);
+ 
+                for (int j = 0; j < quantitat; j++) {
+                    String localitzador = idEsde + "-" + (10000000 + random.nextInt(90000000));
+                    localitzadors.put(localitzador);
+ 
+                    JSONObject reserva = new JSONObject();
+                    reserva.put("idTipus", tipus.getId());
+                    reserva.put("localitzador", localitzador);
+                    reserva.put("nom", nom);
+                    reserva.put("correu", correu);
+                    desarReserva(idEsde, reserva);
+                }
+            }
+        } catch (IOException e) {
+            enviarError(conn, "No s'han pogut enregistrar les entrades");
+            return;
+        }
+ 
+        // Retornem els localitzadors a l'APP
+        JSONObject resposta = new JSONObject();
+        resposta.put("type", "compraOk");
+        resposta.put("localitzadors", localitzadors);
+        conn.send(resposta.toString());
+    }
+ 
+    // Afegeix una reserva a data/<id_esdeveniment>.json (el crea si no existeix)
+    private void desarReserva(String idEsde, JSONObject reserva) throws IOException {
+        File fitxer = new File("data", idEsde + ".json");
+        JSONArray reserves = new JSONArray();
+        if (fitxer.exists()) {
+            reserves = new JSONArray(Files.readString(fitxer.toPath(), StandardCharsets.UTF_8));
+        }
+        reserves.put(reserva);
+        Files.writeString(fitxer.toPath(), reserves.toString(2), StandardCharsets.UTF_8);
+    }
+
+    private void enviarError(WebSocket conn, String text) {
+        JSONObject error = new JSONObject();
+        error.put("type", "error");
+        error.put("message", text);
+        conn.send(error.toString());
     }
 }
