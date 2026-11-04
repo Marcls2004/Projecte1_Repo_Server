@@ -1,0 +1,20 @@
+# Maven
+target/
+data/E*.json
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+nbproject/
+nbactions.xml
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
