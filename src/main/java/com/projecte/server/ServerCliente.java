@@ -10,7 +10,7 @@ public class ServerCliente {
     public static void main(String[] args) {
         try {
             // URL del servidor WebSocket local en el puerto 8888
-            String serverUri = "ws://localhost:8888";
+            String serverUri = "wss://platea3.ieti.site";
             
             WebSocketClient client = new WebSocketClient(new URI(serverUri)) {
                 @Override
