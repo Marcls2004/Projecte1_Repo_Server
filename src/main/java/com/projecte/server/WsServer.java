@@ -109,6 +109,7 @@ public class WsServer extends WebSocketServer {
                 conn.send(resposta.toString());
             }
         } else if (type.equals("comprar")) {
+            //processarCompra(conn, peticio); // Llamamos al nuevo método SQL
             processarCompraSQL(conn, peticio); // Llamamos al nuevo método SQL
         } else {
             enviarError(conn, "Tipus desconegut: " + type);
