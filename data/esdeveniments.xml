@@ -78,7 +78,7 @@
     <!-- Esdeveniments per a R1 (Sala Petita) -->
     <esdeveniment id="E1" recinte="R1">
       <nom>Coses que no es diuen en un sopar</nom>
-      <dataHora>2026-11-21T21:30</dataHora>
+      <dataHora>2026-11-21 21:30</dataHora>
       <categoria>Monòleg</categoria>
       <descripcio>Una hora d'humor sobre les converses incòmodes de cada dia.</descripcio>
       <imatge>monoleg-sopar.jpg</imatge>
@@ -90,7 +90,7 @@
     </esdeveniment>
     <esdeveniment id="E2" recinte="R1">
       <nom>Nits de Poesia i Jazz</nom>
-      <dataHora>2026-12-05T20:00</dataHora>
+      <dataHora>2026-12-05 20:00</dataHora>
       <categoria>Poesia</categoria>
       <descripcio>Recital poètic acompanyat de piano i contrabaix en acústic.</descripcio>
       <imatge>poesia-jazz.jpg</imatge>
@@ -103,7 +103,7 @@
     <!-- Esdeveniments per a R2 (Teatre Principal) -->
     <esdeveniment id="E3" recinte="R2">
       <nom>Romeu i Julieta</nom>
-      <dataHora>2026-11-28T19:00</dataHora>
+      <dataHora>2026-11-28 19:00</dataHora>
       <categoria>Teatre</categoria>
       <descripcio>El clàssic de Shakespeare adaptat a l'època contemporània.</descripcio>
       <imatge>romeu-julieta.jpg</imatge>
@@ -114,7 +114,7 @@
     </esdeveniment>
     <esdeveniment id="E4" recinte="R2">
       <nom>Gala de Dansa Clàssica</nom>
-      <dataHora>2026-12-19T18:30</dataHora>
+      <dataHora>2026-12-19 18:30</dataHora>
       <categoria>Dansa</categoria>
       <descripcio>Espectacle amb les millors peces del ballet internacional.</descripcio>
       <imatge>gala-ballet.jpg</imatge>
@@ -127,7 +127,7 @@
     <!-- Esdeveniments per a R3 (Auditori Municipal) -->
     <esdeveniment id="E5" recinte="R3">
       <nom>La Novena de Beethoven</nom>
-      <dataHora>2026-12-23T20:30</dataHora>
+      <dataHora>2026-12-23 20:30</dataHora>
       <categoria>Música Clàssica</categoria>
       <descripcio>Concert de Nadal a càrrec de l'Orquestra Simfònica del Vallès.</descripcio>
       <imatge>beethoven-novena.jpg</imatge>
@@ -138,7 +138,7 @@
     </esdeveniment>
     <esdeveniment id="E6" recinte="R3">
       <nom>Recital de Piano Solo</nom>
-      <dataHora>2026-12-04T19:30</dataHora>
+      <dataHora>2026-12-04 19:30</dataHora>
       <categoria>Música Clàssica</categoria>
       <descripcio>Un repàs íntim als nocturns de Chopin de la mano d'un virtuós internacional.</descripcio>
       <imatge>piano-solo.jpg</imatge>
@@ -151,7 +151,7 @@
     <!-- Esdeveniments per a R4 (Espai Jove) -->
     <esdeveniment id="E7" recinte="R4">
       <nom>Batalla de Bandes Locals</nom>
-      <dataHora>2026-11-14T18:00</dataHora>
+      <dataHora>2026-11-14 18:00</dataHora>
       <categoria>Concert</categoria>
       <descripcio>Descobreix el talent emergent de la ciutat en aquesta final en directe.</descripcio>
       <imatge>batalla-bandes.jpg</imatge>
@@ -161,7 +161,7 @@
     </esdeveniment>
     <esdeveniment id="E8" recinte="R4">
       <nom>Festa de Cap d'Any Jove</nom>
-      <dataHora>2026-12-31T23:30</dataHora>
+      <dataHora>2026-12-31 23:30</dataHora>
       <categoria>Festa</categoria>
       <descripcio>Donem la benvinguda al 2027 amb els millors DJ locals.</descripcio>
       <imatge>cap-dany.jpg</imatge>
@@ -173,7 +173,7 @@
     <!-- Esdeveniments per a R5 (Palau de Congressos) -->
     <esdeveniment id="E9" recinte="R5">
       <nom>Congrés de Tecnologia i IA 2026</nom>
-      <dataHora>2026-11-25T09:00</dataHora>
+      <dataHora>2026-11-25 09:00</dataHora>
       <categoria>Conferència</categoria>
       <descripcio>Les darreres tendències tecnològiques explicades per experts internacionals.</descripcio>
       <imatge>tech-ia.jpg</imatge>
@@ -184,7 +184,7 @@
     </esdeveniment>
     <esdeveniment id="E10" recinte="R5">
       <nom>Xerrada: Història de l'Art Local</nom>
-      <dataHora>2026-11-19T19:00</dataHora>
+      <dataHora>2026-11-19 19:00</dataHora>
       <categoria>Conferència</categoria>
       <descripcio>Un recorregut visual pels edificis històrics més emblemàtics.</descripcio>
       <imatge>historia-art.jpg</imatge>
@@ -197,7 +197,7 @@
     <!-- Esdeveniments per a R6 (Sala Rock &amp; Live) -->
     <esdeveniment id="E11" recinte="R6">
       <nom>The Rock On Tour</nom>
-      <dataHora>2026-11-20T22:00</dataHora>
+      <dataHora>2026-11-20 22:00</dataHora>
       <categoria>Concert</categoria>
       <descripcio>Concert en directe de la mítica banda de rock dels noranta.</descripcio>
       <imatge>rock-tour.jpg</imatge>
@@ -208,7 +208,7 @@
     </esdeveniment>
     <esdeveniment id="E12" recinte="R6">
       <nom>Tribut a Queen</nom>
-      <dataHora>2026-12-11T21:30</dataHora>
+      <dataHora>2026-12-11 21:30</dataHora>
       <categoria>Concert</categoria>
       <descripcio>El millor xou d'homenatge a Freddie Mercury i companyia.</descripcio>
       <imatge>tribut-queen.jpg</imatge>
@@ -221,7 +221,7 @@
     <!-- Esdeveniments per a R7 (Teatre de l'Artesà) -->
     <esdeveniment id="E13" recinte="R7">
       <nom>Terra Baixa</nom>
-      <dataHora>2026-11-15T18:00</dataHora>
+      <dataHora>2026-11-15 18:00</dataHora>
       <categoria>Teatre</categoria>
       <descripcio>L'obra d'Àngel Guimerà reversionada amb una posada en escena trencadora.</descripcio>
       <imatge>terra-baixa.jpg</imatge>
@@ -231,7 +231,7 @@
     </esdeveniment>
     <esdeveniment id="E14" recinte="R7">
       <nom>El Trencollaons: Teatre de Comèdia</nom>
-      <dataHora>2026-12-05T21:00</dataHora>
+      <dataHora>2026-12-05 21:00</dataHora>
       <categoria>Teatre</categoria>
       <descripcio>Una comèdia d'embolics que et farà riure des del primer minut.</descripcio>
       <imatge>trencollaons-comedia.jpg</imatge>
@@ -243,7 +243,7 @@
     <!-- Esdeveniments per a R8 (Estadi Municipal) -->
     <esdeveniment id="E15" recinte="R8">
       <nom>Derbi de Futbol Regional</nom>
-      <dataHora>2026-11-22T12:00</dataHora>
+      <dataHora>2026-11-22 12:00</dataHora>
       <categoria>Esports</categoria>
       <descripcio>Partit corresponent a la jornada 12 de la lliga local.</descripcio>
       <imatge>derbi-futbol.jpg</imatge>
@@ -254,7 +254,7 @@
     </esdeveniment>
     <esdeveniment id="E16" recinte="R8">
       <nom>Meeting d'Atletisme Ciutat de Cornellà</nom>
-      <dataHora>2026-12-06T10:00</dataHora>
+      <dataHora>2026-12-06 10:00</dataHora>
       <categoria>Esports</categoria>
       <descripcio>Proves de velocitat, fons i salts amb atletes convidats.</descripcio>
       <imatge>atletisme-meeting.jpg</imatge>
@@ -267,7 +267,7 @@
     <!-- Esdeveniments per a R9 (Ateneu Cultural) -->
     <esdeveniment id="E17" recinte="R9">
       <nom>Cicle Cinema d'Autor: Els Clàssics</nom>
-      <dataHora>2026-11-18T20:00</dataHora>
+      <dataHora>2026-11-18 20:00</dataHora>
       <categoria>Cinema</categoria>
       <descripcio>Projecció en versió original subtitulada del film "Metropolis".</descripcio>
       <imatge>cinema-metropolis.jpg</imatge>
@@ -277,7 +277,7 @@
     </esdeveniment>
     <esdeveniment id="E18" recinte="R9">
       <nom>Fira del Disc de Col·leccionista</nom>
-      <dataHora>2026-12-13T10:00</dataHora>
+      <dataHora>2026-12-13 10:00</dataHora>
       <categoria>Fira</categoria>
       <descripcio>Compra i venda de vinils, CD i marxandatge musical.</descripcio>
       <imatge>fira-disc.jpg</imatge>
@@ -289,7 +289,7 @@
     <!-- Esdeveniments per a R10 (Pavelló d'Esports) -->
     <esdeveniment id="E19" recinte="R10">
       <nom>Final Cup de Bàsquet</nom>
-      <dataHora>2026-11-29T17:30</dataHora>
+      <dataHora>2026-11-29 17:30</dataHora>
       <categoria>Esports</categoria>
       <descripcio>La gran final del torneig d'hivern de bàsquet masculí.</descripcio>
       <imatge>basquet-final.jpg</imatge>
@@ -300,7 +300,7 @@
     </esdeveniment>
     <esdeveniment id="E20" recinte="R10">
       <nom>Exhibició de Gimnàstica Rítmica</nom>
-      <dataHora>2026-12-20T11:00</dataHora>
+      <dataHora>2026-12-20 11:00</dataHora>
       <categoria>Esports</categoria>
       <descripcio>Mostra de Nadal dels conjunts de totes les categories.</descripcio>
       <imatge>gimnastica-ritmica.jpg</imatge>
@@ -313,7 +313,7 @@
     <!-- Esdeveniments per a R11 (Cine Club Paradiso) -->
     <esdeveniment id="E21" recinte="R11">
       <nom>Cinema a la Fresca d'Hivern</nom>
-      <dataHora>2026-12-12T19:00</dataHora>
+      <dataHora>2026-12-12 19:00</dataHora>
       <categoria>Cinema</categoria>
       <descripcio>Porta la teva manta! Projecció de pel·lícules de Nadal amb xocolata desfeta.</descripcio>
       <imatge>cinema-fresca.jpg</imatge>
@@ -323,7 +323,7 @@
     </esdeveniment>
     <esdeveniment id="E22" recinte="R11">
       <nom>Mercat d'Artesania Sostenible</nom>
-      <dataHora>2026-12-20T10:00</dataHora>
+      <dataHora>2026-12-20 10:00</dataHora>
       <categoria>Fira</categoria>
       <descripcio>Productes fets a mà, locals i respectuosos amb el medi ambient.</descripcio>
       <imatge>mercat-artesania.jpg</imatge>
@@ -335,7 +335,7 @@
     <!-- Esdeveniments per a R12 (La Factoria Cultural) -->
     <esdeveniment id="E23" recinte="R12">
       <nom>Fira del Videojoc i Gaming 2026</nom>
-      <dataHora>2026-11-14T10:00</dataHora>
+      <dataHora>2026-11-14 10:00</dataHora>
       <categoria>Fira</categoria>
       <descripcio>Provatures de noves consoles, tornejos eSports i zones retro.</descripcio>
       <imatge>fira-gaming.jpg</imatge>
@@ -345,7 +345,7 @@
     </esdeveniment>
     <esdeveniment id="E24" recinte="R12">
       <nom>Saló del Còmic i l'Anime</nom>
-      <dataHora>2026-12-12T10:00</dataHora>
+      <dataHora>2026-12-12 10:00</dataHora>
       <categoria>Fira</categoria>
       <descripcio>Concursos de Cosplay, signatures d'autors i marxandatge variat.</descripcio>
       <imatge>salo-comic.jpg</imatge>
@@ -357,7 +357,7 @@
     <!-- Esdeveniments per a R13 (Auditori de la Música) -->
     <esdeveniment id="E25" recinte="R13">
       <nom>Concert d'Estiu Tardà: Indie Pop</nom>
-      <dataHora>2026-11-08T16:00</dataHora>
+      <dataHora>2026-11-08 16:00</dataHora>
       <categoria>Concert</categoria>
       <descripcio>Festival de música independent a l'aire lliure amb Food Trucks.</descripcio>
       <imatge>indie-festival.jpg</imatge>
@@ -368,7 +368,7 @@
     </esdeveniment>
     <esdeveniment id="E26" recinte="R13">
       <nom>Cants Gregoris sota les Estrelles</nom>
-      <dataHora>2026-11-13T20:30</dataHora>
+      <dataHora>2026-11-13 20:30</dataHora>
       <categoria>Música Clàssica</categoria>
       <descripcio>Una experiència mística amb la coral del monestir sota la llum de les espelmes.</descripcio>
       <imatge>cants-gregoris.jpg</imatge>
@@ -381,7 +381,7 @@
     <!-- Esdeveniments per a R14 (Teatre de Titelles) -->
     <esdeveniment id="E27" recinte="R14">
       <nom>Les Aventures d'en Patufet</nom>
-      <dataHora>2026-11-15T11:30</dataHora>
+      <dataHora>2026-11-15 11:30</dataHora>
       <categoria>Infantil</categoria>
       <descripcio>Espectacle de titelles tradicional per a nens i nenes de 2 a 7 anys.</descripcio>
       <imatge>titelles-patufet.jpg</imatge>
@@ -391,7 +391,7 @@
     </esdeveniment>
     <esdeveniment id="E28" recinte="R14">
       <nom>El Patge Reial Visita el Teatre</nom>
-      <dataHora>2026-12-28T17:00</dataHora>
+      <dataHora>2026-12-28 17:00</dataHora>
       <categoria>Infantil</categoria>
       <descripcio>Vine a lliurar la teva carta i gaudeix d'una petita història màgica.</descripcio>
       <imatge>patge-reial.jpg</imatge>
@@ -403,7 +403,7 @@
     <!-- Esdeveniments per a R15 (Sala Jazz Underground) -->
     <esdeveniment id="E29" recinte="R15">
       <nom>Late Night Jazz Quartet</nom>
-      <dataHora>2026-11-27T23:00</dataHora>
+      <dataHora>2026-11-27 23:00</dataHora>
       <categoria>Concert</categoria>
       <descripcio>Sessió de jazz clàssic nocturn amb beguda inclosa.</descripcio>
       <imatge>jazz-quartet.jpg</imatge>
@@ -414,7 +414,7 @@
     </esdeveniment>
     <esdeveniment id="E30" recinte="R15">
       <nom>Càpsules Històriques: 15 minuts</nom>
-      <dataHora>2026-11-20T19:30</dataHora>
+      <dataHora>2026-11-20 19:30</dataHora>
       <categoria>Teatre</categoria>
       <descripcio>Teatre en format ultra-curt a menys d'un metre dels actors.</descripcio>
       <imatge>microteatre-capsula.jpg</imatge>
@@ -427,7 +427,7 @@
     <!-- Esdeveniments per a R16 (Espai a l'Aire Lliure) -->
     <esdeveniment id="E31" recinte="R16">
       <nom>Festival de Música Natura</nom>
-      <dataHora>2026-11-10T17:00</dataHora>
+      <dataHora>2026-11-10 17:00</dataHora>
       <categoria>Concert</categoria>
       <descripcio>Música acústica en un entorn verd i relaxant.</descripcio>
       <imatge>musica-natura.jpg</imatge>
@@ -437,7 +437,7 @@
     </esdeveniment>
     <esdeveniment id="E32" recinte="R16">
       <nom>Ioga a la Fresca</nom>
-      <dataHora>2026-11-17T09:30</dataHora>
+      <dataHora>2026-11-17 09:30</dataHora>
       <categoria>Esports</categoria>
       <descripcio>Sessió matinal de ioga a l'aire lliure per connectar amb la natura.</descripcio>
       <imatge>ioga-fresca.jpg</imatge>
@@ -449,7 +449,7 @@
     <!-- Esdeveniments per a R17 (Claustre del Monestir) -->
     <esdeveniment id="E33" recinte="R17">
       <nom>Concert de Guitarra Clàssica</nom>
-      <dataHora>2026-11-24T19:00</dataHora>
+      <dataHora>2026-11-24 19:00</dataHora>
       <categoria>Música Clàssica</categoria>
       <descripcio>Melodies tradicionals interpretades sota els arcs del claustre medieval.</descripcio>
       <imatge>guitarra-claustre.jpg</imatge>
@@ -459,7 +459,7 @@
     </esdeveniment>
     <esdeveniment id="E34" recinte="R17">
       <nom>Lectura de Poemes de Tardor</nom>
-      <dataHora>2026-11-30T18:30</dataHora>
+      <dataHora>2026-11-30 18:30</dataHora>
       <categoria>Poesia</categoria>
       <descripcio>Vetllada literària amb acompanyament de violoncel acústic.</descripcio>
       <imatge>poemes-tardor.jpg</imatge>
@@ -471,7 +471,7 @@
     <!-- Esdeveniments per a R18 (Teatre l'Amistat) -->
     <esdeveniment id="E35" recinte="R18">
       <nom>L'Avar de Molière</nom>
-      <dataHora>2026-11-12T20:00</dataHora>
+      <dataHora>2026-11-12 20:00</dataHora>
       <categoria>Teatre</categoria>
       <descripcio>Adaptació dinàmica i satírica d'una de les obres mestres de la comèdia clàssica.</descripcio>
       <imatge>avar-moliere.jpg</imatge>
@@ -481,7 +481,7 @@
     </esdeveniment>
     <esdeveniment id="E36" recinte="R18">
       <nom>Monòlegs de Nit</nom>
-      <dataHora>2026-12-18T22:30</dataHora>
+      <dataHora>2026-12-18 22:30</dataHora>
       <categoria>Monòleg</categoria>
       <descripcio>Sessió de stand-up comedy amb còmics reconeguts de la televisió.</descripcio>
       <imatge>monolegs-nit.jpg</imatge>
@@ -493,7 +493,7 @@
     <!-- Esdeveniments per a R19 (Multiespai i Fira) -->
     <esdeveniment id="E37" recinte="R19">
       <nom>Fira de l'Automòbil d'Ocasió</nom>
-      <dataHora>2026-11-06T10:00</dataHora>
+      <dataHora>2026-11-06 10:00</dataHora>
       <categoria>Fira</categoria>
       <descripcio>Exposició i venda de vehicles kilómetre zero i d'ocasió amb grans descomptes.</descripcio>
       <imatge>fira-auto.jpg</imatge>
@@ -503,7 +503,7 @@
     </esdeveniment>
     <esdeveniment id="E38" recinte="R19">
       <nom>Saló de la Infància i de Nadal</nom>
-      <dataHora>2026-12-26T11:00</dataHora>
+      <dataHora>2026-12-26 11:00</dataHora>
       <categoria>Infantil</categoria>
       <descripcio>Activitats, inflables, tallers i jocs per a tota la família durant les vacances.</descripcio>
       <imatge>salo-infancia.jpg</imatge>
@@ -515,7 +515,7 @@
     <!-- Esdeveniments per a R20 (Sala de Microteatre) -->
     <esdeveniment id="E39" recinte="R20">
       <nom>Històries de Tren: Microteatre</nom>
-      <dataHora>2026-11-11T20:00</dataHora>
+      <dataHora>2026-11-11 20:00</dataHora>
       <categoria>Teatre</categoria>
       <descripcio>Tres peces breus interpretades de forma simultània i molt propera.</descripcio>
       <imatge>tren-microteatre.jpg</imatge>
@@ -525,7 +525,7 @@
     </esdeveniment>
     <esdeveniment id="E40" recinte="R20">
       <nom>Amors de Barra: Microteatre</nom>
-      <dataHora>2026-11-25T20:30</dataHora>
+      <dataHora>2026-11-25 20:30</dataHora>
       <categoria>Teatre</categoria>
       <descripcio>Comèdia romàntica minimalista on el públic forma part de l'escenografia.</descripcio>
       <imatge>amors-barra.jpg</imatge>
