@@ -1,19 +1,18 @@
 package com.projecte.server;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+ 
 import java.io.File;
 import java.sql.Connection;
-import java.sql.DriverManager;
-
-import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+ 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+ 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class leer_catalogo {
     
@@ -226,4 +225,150 @@ public class leer_catalogo {
             return null;
         }
     }
+    
+public static void migrarCatalegABaseDeDades(
+        Cataleg cataleg, Connection connexio
+) throws SQLException {
+
+    String sqlRecinte = """
+        INSERT OR IGNORE INTO recintes (codi, nom)
+        VALUES (?, ?)
+        """;
+
+    String sqlZona = """
+        INSERT OR IGNORE INTO zones
+        (recinte_id, codi, nom, tipus, aforament)
+        VALUES (?, ?, ?, ?, ?)
+        """;
+
+    String sqlEsdeveniment = """
+        INSERT OR IGNORE INTO esdeveniments
+        (recinte_id, codi, nom, data_esdeveniment, categoria, descripcio)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """;
+
+    String sqlTipus = """
+        INSERT OR IGNORE INTO tipus_entrada
+        (esdeveniment_id, zona_id, codi, nom, quota, preu)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """;
+
+    boolean autoCommitOriginal = connexio.getAutoCommit();
+
+    try {
+        connexio.setAutoCommit(false);
+
+        // 1. Migrar recintes i zones
+        try (PreparedStatement psRecinte = connexio.prepareStatement(sqlRecinte);
+             PreparedStatement psZona = connexio.prepareStatement(sqlZona);
+             PreparedStatement psIdRecinte = connexio.prepareStatement(
+                     "SELECT recinte_id FROM recintes WHERE codi = ?");
+             PreparedStatement psIdZona = connexio.prepareStatement(
+                     "SELECT zona_id FROM zones WHERE recinte_id = ? AND codi = ?")) {
+
+            for (Recinte recinte : cataleg.getRecintes()) {
+
+                psRecinte.setString(1, recinte.getId());
+                psRecinte.setString(2, recinte.getNom());
+                psRecinte.executeUpdate();
+
+                psIdRecinte.setString(1, recinte.getId());
+
+                int idRecinte;
+                try (ResultSet rs = psIdRecinte.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new SQLException("No s'ha trobat el recinte: " + recinte.getId());
+                    }
+                    idRecinte = rs.getInt("recinte_id");
+                }
+
+                for (Zona zona : recinte.getZones()) {
+                    psZona.setInt(1, idRecinte);
+                    psZona.setString(2, zona.getId());
+                    psZona.setString(3, zona.getNom());
+                    psZona.setString(4, zona.getTipus());
+                    psZona.setInt(5, zona.getAforament());
+                    psZona.executeUpdate();
+                }
+            }
+        }
+
+        // 2. Migrar esdeveniments i tipus d'entrada
+        try (PreparedStatement psEsdeveniment = connexio.prepareStatement(sqlEsdeveniment);
+             PreparedStatement psTipus = connexio.prepareStatement(sqlTipus);
+             PreparedStatement psIdRecinte = connexio.prepareStatement(
+                     "SELECT recinte_id FROM recintes WHERE codi = ?");
+             PreparedStatement psIdEsdeveniment = connexio.prepareStatement(
+                     "SELECT esdeveniment_id FROM esdeveniments WHERE recinte_id = ? AND codi = ?");
+             PreparedStatement psIdZona = connexio.prepareStatement(
+                     "SELECT zona_id FROM zones WHERE recinte_id = ? AND codi = ?")) {
+
+            for (Esdeveniment esdeveniment : cataleg.getEsdeveniments()) {
+
+                psIdRecinte.setString(1, esdeveniment.getRecinte());
+
+                int idRecinte;
+                try (ResultSet rs = psIdRecinte.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new SQLException("No s'ha trobat el recinte de l'esdeveniment: "
+                                + esdeveniment.getId());
+                    }
+                    idRecinte = rs.getInt("recinte_id");
+                }
+
+                psEsdeveniment.setInt(1, idRecinte);
+                psEsdeveniment.setString(2, esdeveniment.getId());
+                psEsdeveniment.setString(3, esdeveniment.getNom());
+                psEsdeveniment.setString(4, esdeveniment.getDataHora());
+                psEsdeveniment.setString(5, esdeveniment.getCategoria());
+                psEsdeveniment.setString(6, esdeveniment.getDescripcio());
+                psEsdeveniment.executeUpdate();
+
+                psIdEsdeveniment.setInt(1, idRecinte);
+                psIdEsdeveniment.setString(2, esdeveniment.getId());
+
+                int idEsdeveniment;
+                try (ResultSet rs = psIdEsdeveniment.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new SQLException("No s'ha pogut recuperar l'esdeveniment: "
+                                + esdeveniment.getId());
+                    }
+                    idEsdeveniment = rs.getInt("esdeveniment_id");
+                }
+
+                for (TipusEntrada tipus : esdeveniment.getTipusEntrades()) {
+
+                    psIdZona.setInt(1, idRecinte);
+                    psIdZona.setString(2, tipus.getZona());
+
+                    int idZona;
+                    try (ResultSet rs = psIdZona.executeQuery()) {
+                        if (!rs.next()) {
+                            throw new SQLException("No s'ha trobat la zona: "
+                                    + tipus.getZona());
+                        }
+                        idZona = rs.getInt("zona_id");
+                    }
+
+                    psTipus.setInt(1, idEsdeveniment);
+                    psTipus.setInt(2, idZona);
+                    psTipus.setString(3, tipus.getId());
+                    psTipus.setString(4, tipus.getNom());
+                    psTipus.setInt(5, tipus.getQuota());
+                    psTipus.setDouble(6, tipus.getPreu());
+                    psTipus.executeUpdate();
+                }
+            }
+        }
+
+        connexio.commit();
+
+    } catch (SQLException e) {
+        connexio.rollback();
+        throw e;
+
+    } finally {
+        connexio.setAutoCommit(autoCommitOriginal);
+    }
+}
 }
