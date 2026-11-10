@@ -38,4 +38,8 @@ public class Cataleg {
         }
         return recinte.getZona(tipus.getZona());
     }
+    // Retorna totes les zones d'un recinte
+    public Collection<Recinte> getRecintes() {
+        return recintes.values();
+    }
 }

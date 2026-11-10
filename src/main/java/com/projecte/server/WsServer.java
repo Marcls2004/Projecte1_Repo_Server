@@ -7,6 +7,12 @@ import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Random;
 
 import org.java_websocket.WebSocket;
@@ -40,6 +46,8 @@ public class WsServer extends WebSocketServer {
 
         System.out.println("Aturant WsServer");
         socket.stop(1000);
+        BaseDades.tancar();
+        System.out.println("Servidor aturat de manera neta.");
     }
 
     public WsServer(int port) {
@@ -101,7 +109,10 @@ public class WsServer extends WebSocketServer {
                 conn.send(resposta.toString());
             }
         } else if (type.equals("comprar")) {
-            processarCompra(conn, peticio);
+            //processarCompra(conn, peticio); // Llamamos al nuevo método SQL
+            processarCompraSQL(conn, peticio); // Llamamos al nuevo método SQL
+        } else if (type.equals("getEntrades")) {
+            enviarEntrades(conn, peticio.optString("correu"));
         } else {
             enviarError(conn, "Tipus desconegut: " + type);
         }
@@ -121,8 +132,17 @@ public class WsServer extends WebSocketServer {
     @Override
     public void onStart() {
         // S'inicia el servidor
-        File fitxer = new File("data", "esdeveniments.xml");
-        cataleg = leer_catalogo.carregarCataleg(fitxer);
+        //File fitxer = new File("data", "esdeveniments.xml");
+        //cataleg = leer_catalogo.carregarCataleg(fitxer);
+        
+        
+        //URL provisional para luego cambiarla por la bueno
+        BaseDades.conectar();
+
+        migrarSiBuida(BaseDades.getConnexio());
+
+        cataleg = leer_catalogo.carregar_SQL(BaseDades.getConnexio());
+        
         if (cataleg == null) {
             System.out.println("ERROR: no s'ha pogut carregar el cataleg");
         } else {
@@ -133,6 +153,60 @@ public class WsServer extends WebSocketServer {
         setConnectionLostTimeout(100);
     }
 
+    private void enviarEntrades(WebSocket conn, String correu) {
+        String sql = "SELECT e.nom AS esdeveniment, t.nom AS tipus, en.fila, en.seient, " +
+                     "c.nom_comprador AS titular, en.localitzador_entrada AS localitzador " +
+                     "FROM entrades en " +
+                     "JOIN compres c ON en.compra_id = c.compra_id " +
+                     "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                     "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                     "WHERE c.correu = ?";
+ 
+        JSONArray llista = new JSONArray();
+ 
+        try (PreparedStatement ps = BaseDades.getConnexio().prepareStatement(sql)) {
+            ps.setString(1, correu);
+ 
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Les entrades generals no tenen seient (fila i seient a NULL)
+                    int fila = rs.getInt("fila");
+                    String seient = rs.wasNull() ? "" : "Fila " + fila + " - Seient " + rs.getInt("seient");
+ 
+                    JSONObject entrada = new JSONObject();
+                    entrada.put("esdeveniment", rs.getString("esdeveniment"));
+                    entrada.put("tipus", rs.getString("tipus"));
+                    entrada.put("seient", seient);
+                    entrada.put("titular", rs.getString("titular"));
+                    entrada.put("localitzador", rs.getString("localitzador"));
+                    llista.put(entrada);
+                }
+            }
+        } catch (SQLException e) {
+            enviarError(conn, "No s'han pogut obtenir les entrades");
+            return;
+        }
+ 
+        JSONObject resposta = new JSONObject();
+        resposta.put("type", "entrades");
+        resposta.put("data", llista);
+        conn.send(resposta.toString());
+    }
+
+    private void migrarSiBuida(Connection connexio) {
+        try (Statement st = connexio.createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM esdeveniments")) {
+ 
+            if (rs.next() && rs.getInt(1) == 0) {
+                Cataleg catalegXml = leer_catalogo.carregarCataleg(new File("data", "esdeveniments.xml"));
+                leer_catalogo.migrarCatalegABaseDeDades(catalegXml, connexio);
+                System.out.println("Catàleg migrat de l'XML a la BD");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error en migrar el catàleg a la BD: " + e.getMessage());
+        }
+    }
+    
     private JSONArray construirLlistaEsdeveniments() {
         JSONArray jLlistaEsdeveniments = new JSONArray();
  
@@ -226,6 +300,136 @@ public class WsServer extends WebSocketServer {
         resposta.put("type", "compraOk");
         resposta.put("localitzadors", localitzadors);
         conn.send(resposta.toString());
+    }
+
+    private void processarCompraSQL (WebSocket conn, JSONObject peticio){
+        String nom = peticio.optString("nom");
+        String correu = peticio.optString("correu");
+        JSONArray entrades = peticio.optJSONArray("entrades");
+
+        if (entrades == null){
+            enviarError(conn, "No hi ha entrades a la cistella");
+            return;
+        }
+
+        for(int i = 0; i < entrades.length(); i++){
+            JSONObject linia = entrades.getJSONObject(i);
+            Esdeveniment esdeveniment = cataleg.getEsdeveniment(linia.optString("idEsdeveniment"));
+            TipusEntrada tipusEntrada = null;
+            if (esdeveniment != null){
+                tipusEntrada = esdeveniment.getTipusEntrada(linia.optString("idTipus"));
+            }
+            if (tipusEntrada == null || linia.optInt("quantitat") > tipusEntrada.getQuota()){
+                enviarError(conn, "No es poden revervar les entrades (quota insuficient)");
+                return;
+            }
+        }
+
+        String sqlCompra = "INSERT INTO compres (localitzador_compra, nom_comprador, correu) VALUES (?, ?, ?)";
+        String sqlGetTipusId = "SELECT t.tipus_entrada_id, t.preu FROM tipus_entrada t " +
+                           "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                           "WHERE e.codi = ? AND t.codi = ?";
+        String sqlInsertEntrada = "INSERT INTO entrades (compra_id, tipus_entrada_id, localitzador_entrada, preu_pagat) VALUES (?, ?, ?, ?)";
+
+        Connection connection = null;
+        JSONArray localitzadors = new JSONArray();
+
+        try {
+            connection = BaseDades.getConnexio();
+            
+            // Desactivamos autoCommit para que sea una transacción unificada y segura
+            connection.setAutoCommit(false);
+            
+            // 1. Generamos un localizador único general para toda la compra (ej: LC-34829104)
+            String localitzadorCompra = "LC-" + (10000000 + random.nextInt(90000000));
+
+            // 2. Preparamos el Statement de la compra pidiéndole que nos retorne la clave primaria generada (compra_id)
+            PreparedStatement psCompra = connection.prepareStatement(sqlCompra, Statement.RETURN_GENERATED_KEYS);
+            psCompra.setString(1, localitzadorCompra);
+            psCompra.setString(2, nom);
+            psCompra.setString(3, correu);
+            psCompra.executeUpdate();
+
+            // 3. Recuperamos el ID autoincremental que SQLite le ha asignado a esta compra
+            ResultSet rsIdCompra = psCompra.getGeneratedKeys();
+            int idCompraGenerat = 0;
+            if (rsIdCompra.next()){
+                idCompraGenerat = rsIdCompra.getInt(1);
+            }
+
+            rsIdCompra.close();
+            psCompra.close();
+
+            // 4. Preparamos los statements para las consultas internas del bucle
+            PreparedStatement psGetTipus = connection.prepareStatement(sqlGetTipusId);
+            PreparedStatement psEntrada = connection.prepareStatement(sqlInsertEntrada);
+
+            // 5. Recorremos cada línea de la cistella
+            for (int i = 0; i < entrades.length(); i++){
+                JSONObject linia = entrades.getJSONObject(i);
+                String idEsdeveniment = linia.getString("idEsdeveniment");
+                String idTipus = linia.getString("idTipus");
+                int quantitat = linia.getInt("quantitat");
+
+                // Restamos la cuota en la memoria del servidor (catálogo)
+                TipusEntrada tipusMemoria = cataleg.getEsdeveniment(idEsdeveniment).getTipusEntrada(idTipus);
+                tipusMemoria.restarQuota(quantitat);
+
+                // 6. Consultamos la base de datos para obtener el ID numérico interno y el precio real
+                psGetTipus.setString(1, idEsdeveniment);
+                psGetTipus.setString(2, idTipus);
+
+                ResultSet rsTipusId = psGetTipus.executeQuery();
+
+                int tipusEntradesIdIntern = 0;
+                double preuPagat = 0.0;
+
+                if (rsTipusId.next()){
+                    tipusEntradesIdIntern = rsTipusId.getInt("tipus_entrada_id");
+                    preuPagat = rsTipusId.getDouble("preu");
+                }
+                rsTipusId.close();
+
+                // 7. Creamos tantos registros de entradas individuales como indique la 'quantitat'
+                for (int j = 0; j < quantitat; j++){
+                    String localitzadorEntrada = idEsdeveniment + "-" + (10000000 + random.nextInt(90000000));
+                    localitzadors.put(localitzadorEntrada);
+
+                    psEntrada.setInt(1, idCompraGenerat);
+                    psEntrada.setInt(2, tipusEntradesIdIntern);
+                    psEntrada.setString(3, localitzadorEntrada);
+                    psEntrada.setDouble(4, preuPagat);
+                    psEntrada.executeUpdate();
+                }
+
+            }
+
+            psGetTipus.close();
+            psEntrada.close();
+
+            // Si todo termina con éxito, guardamos de golpe en la base de datos
+            connection.commit();
+
+            // Retornamos los localizadores a la APP
+            JSONObject resposta = new JSONObject();
+            resposta.put("type", "compraOk");
+            resposta.put("localitzadors", localitzadors);
+            conn.send(resposta.toString());
+
+
+        } catch (Exception e) {
+            if (connection != null){
+                        // Si hay cualquier error de base de datos, deshacemos todo para no dejar registros basura
+                try {connection.rollback();} catch(SQLException ex){ex.printStackTrace();}
+            }
+            System.err.println("Error SQL en procesar la compra: " +  e.getMessage());
+            enviarError(conn, "No s'han pogut enregistrar les entrades a la base de dades");
+        } finally{
+            // Siempre restauramos el comportamiento por defecto de la conexión al terminar
+            if (connection != null){
+                try { connection.setAutoCommit(true);} catch (SQLException ex) {ex.printStackTrace();}
+            }
+        }
     }
  
     // Afegeix una reserva a data/<id_esdeveniment>.json (el crea si no existeix)
