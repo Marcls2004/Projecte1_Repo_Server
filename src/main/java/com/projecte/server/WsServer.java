@@ -111,6 +111,8 @@ public class WsServer extends WebSocketServer {
         } else if (type.equals("comprar")) {
             //processarCompra(conn, peticio); // Llamamos al nuevo método SQL
             processarCompraSQL(conn, peticio); // Llamamos al nuevo método SQL
+        } else if (type.equals("getEntrades")) {
+            enviarEntrades(conn, peticio.optString("correu"));
         } else {
             enviarError(conn, "Tipus desconegut: " + type);
         }
@@ -137,6 +139,8 @@ public class WsServer extends WebSocketServer {
         //URL provisional para luego cambiarla por la bueno
         BaseDades.conectar();
 
+        migrarSiBuida(BaseDades.getConnexio());
+
         cataleg = leer_catalogo.carregar_SQL(BaseDades.getConnexio());
         
         if (cataleg == null) {
@@ -149,6 +153,60 @@ public class WsServer extends WebSocketServer {
         setConnectionLostTimeout(100);
     }
 
+    private void enviarEntrades(WebSocket conn, String correu) {
+        String sql = "SELECT e.nom AS esdeveniment, t.nom AS tipus, en.fila, en.seient, " +
+                     "c.nom_comprador AS titular, en.localitzador_entrada AS localitzador " +
+                     "FROM entrades en " +
+                     "JOIN compres c ON en.compra_id = c.compra_id " +
+                     "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                     "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                     "WHERE c.correu = ?";
+ 
+        JSONArray llista = new JSONArray();
+ 
+        try (PreparedStatement ps = BaseDades.getConnexio().prepareStatement(sql)) {
+            ps.setString(1, correu);
+ 
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Les entrades generals no tenen seient (fila i seient a NULL)
+                    int fila = rs.getInt("fila");
+                    String seient = rs.wasNull() ? "" : "Fila " + fila + " - Seient " + rs.getInt("seient");
+ 
+                    JSONObject entrada = new JSONObject();
+                    entrada.put("esdeveniment", rs.getString("esdeveniment"));
+                    entrada.put("tipus", rs.getString("tipus"));
+                    entrada.put("seient", seient);
+                    entrada.put("titular", rs.getString("titular"));
+                    entrada.put("localitzador", rs.getString("localitzador"));
+                    llista.put(entrada);
+                }
+            }
+        } catch (SQLException e) {
+            enviarError(conn, "No s'han pogut obtenir les entrades");
+            return;
+        }
+ 
+        JSONObject resposta = new JSONObject();
+        resposta.put("type", "entrades");
+        resposta.put("data", llista);
+        conn.send(resposta.toString());
+    }
+
+    private void migrarSiBuida(Connection connexio) {
+        try (Statement st = connexio.createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM esdeveniments")) {
+ 
+            if (rs.next() && rs.getInt(1) == 0) {
+                Cataleg catalegXml = leer_catalogo.carregarCataleg(new File("data", "esdeveniments.xml"));
+                leer_catalogo.migrarCatalegABaseDeDades(catalegXml, connexio);
+                System.out.println("Catàleg migrat de l'XML a la BD");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error en migrar el catàleg a la BD: " + e.getMessage());
+        }
+    }
+    
     private JSONArray construirLlistaEsdeveniments() {
         JSONArray jLlistaEsdeveniments = new JSONArray();
  
