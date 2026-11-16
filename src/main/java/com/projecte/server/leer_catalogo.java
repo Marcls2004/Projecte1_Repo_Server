@@ -72,6 +72,15 @@ public class leer_catalogo {
                             eZona.getAttribute("nom"),
                             eZona.getAttribute("tipus"),
                             Integer.parseInt(eZona.getAttribute("aforament")));
+
+                    // Zones numerades: files, seients per fila i posició dins la sala
+                    if (eZona.hasAttribute("num_files")) {
+                        zona.setGraella(
+                                Integer.parseInt(eZona.getAttribute("num_files")),
+                                Integer.parseInt(eZona.getAttribute("seients_per_fila")),
+                                Integer.parseInt(eZona.getAttribute("fila_inici")),
+                                Integer.parseInt(eZona.getAttribute("columna_inici")));
+                    }
                     recinte.afegirZona(zona);
                 }
                 cataleg.afegirRecinte(recinte);
@@ -122,7 +131,9 @@ public class leer_catalogo {
                             "FROM esdeveniments e " +
                             "JOIN recintes r ON e.recinte_id = r.recinte_id";
 
-        String sqlTipus = "SELECT t.codi AS tipus_codi, t.nom AS tipus_nom, z.codi AS zona_codi, t.preu, t.quota " +
+        // quota = disponibles: quota inicial menys les entrades ja venudes d'aquest tipus
+        String sqlTipus = "SELECT t.codi AS tipus_codi, t.nom AS tipus_nom, z.codi AS zona_codi, t.preu, " +
+                    "t.quota - (SELECT COUNT(*) FROM entrades en WHERE en.tipus_entrada_id = t.tipus_entrada_id) AS quota " +
                     "FROM tipus_entrada t " +
                     "JOIN zones z ON t.zona_id = z.zona_id " +
                     "WHERE t.esdeveniment_id = ?";
@@ -237,8 +248,8 @@ public static void migrarCatalegABaseDeDades(
 
     String sqlZona = """
         INSERT OR IGNORE INTO zones
-        (recinte_id, codi, nom, tipus, aforament)
-        VALUES (?, ?, ?, ?, ?)
+        (recinte_id, codi, nom, tipus, aforament, num_files, seients_per_fila, fila_inici, columna_inici)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
     String sqlEsdeveniment = """
@@ -288,6 +299,11 @@ public static void migrarCatalegABaseDeDades(
                     psZona.setString(3, zona.getNom());
                     psZona.setString(4, zona.getTipus());
                     psZona.setInt(5, zona.getAforament());
+                    // A les zones generals aquests camps queden a NULL
+                    psZona.setObject(6, zona.getNumFiles());
+                    psZona.setObject(7, zona.getSeientsPerFila());
+                    psZona.setObject(8, zona.getFilaInici());
+                    psZona.setObject(9, zona.getColumnaInici());
                     psZona.executeUpdate();
                 }
             }

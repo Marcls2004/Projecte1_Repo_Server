@@ -8,7 +8,6 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -111,6 +110,8 @@ public class WsServer extends WebSocketServer {
         } else if (type.equals("comprar")) {
             //processarCompra(conn, peticio); // Llamamos al nuevo método SQL
             processarCompraSQL(conn, peticio); // Llamamos al nuevo método SQL
+        } else if (type.equals("getMapa")) {
+            enviarMapa(conn, peticio.optString("idEsdeveniment"));
         } else if (type.equals("getEntrades")) {
             enviarEntrades(conn, peticio.optString("correu"));
         } else {
@@ -193,6 +194,74 @@ public class WsServer extends WebSocketServer {
         conn.send(resposta.toString());
     }
 
+    private void enviarMapa(WebSocket conn, String idEsdeveniment) {
+        String sqlZones = "SELECT z.zona_id, z.codi, z.nom, z.tipus, z.aforament, z.num_files, z.seients_per_fila, " +
+                          "z.fila_inici, z.columna_inici, e.esdeveniment_id, e.nom AS esdeveniment, r.nom AS recinte " +
+                          "FROM esdeveniments e " +
+                          "JOIN recintes r ON e.recinte_id = r.recinte_id " +
+                          "JOIN zones z ON z.recinte_id = r.recinte_id " +
+                          "WHERE e.codi = ? ORDER BY z.zona_id";
+
+        String sqlVenudes = "SELECT en.fila, en.seient, en.localitzador_entrada, t.nom AS tipus, " +
+                            "c.nom_comprador, c.correu " +
+                            "FROM entrades en " +
+                            "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                            "JOIN compres c ON en.compra_id = c.compra_id " +
+                            "WHERE t.esdeveniment_id = ? AND t.zona_id = ?";
+
+        JSONObject resposta = new JSONObject();
+        JSONArray jZones = new JSONArray();
+
+        try (PreparedStatement psZones = BaseDades.getConnexio().prepareStatement(sqlZones);
+             PreparedStatement psVenudes = BaseDades.getConnexio().prepareStatement(sqlVenudes)) {
+
+            psZones.setString(1, idEsdeveniment);
+            try (ResultSet rz = psZones.executeQuery()) {
+                while (rz.next()) {
+                    resposta.put("esdeveniment", rz.getString("esdeveniment"));
+                    resposta.put("recinte", rz.getString("recinte"));
+
+                    JSONObject jZona = new JSONObject();
+                    jZona.put("codi", rz.getString("codi"));
+                    jZona.put("nom", rz.getString("nom"));
+                    jZona.put("tipus", rz.getString("tipus"));
+                    jZona.put("aforament", rz.getInt("aforament"));
+                    jZona.put("numFiles", rz.getInt("num_files"));          // 0 a les generals
+                    jZona.put("seientsPerFila", rz.getInt("seients_per_fila"));
+                    jZona.put("filaInici", rz.getInt("fila_inici"));
+                    jZona.put("columnaInici", rz.getInt("columna_inici"));
+
+                    // Entrades venudes d'aquest esdeveniment en aquesta zona
+                    JSONArray jVenuts = new JSONArray();
+                    psVenudes.setInt(1, rz.getInt("esdeveniment_id"));
+                    psVenudes.setInt(2, rz.getInt("zona_id"));
+                    try (ResultSet rv = psVenudes.executeQuery()) {
+                        while (rv.next()) {
+                            JSONObject jSeient = new JSONObject();
+                            jSeient.put("fila", rv.getInt("fila"));        // 0 a les generals
+                            jSeient.put("seient", rv.getInt("seient"));
+                            jSeient.put("localitzador", rv.getString("localitzador_entrada"));
+                            jSeient.put("tipus", rv.getString("tipus"));
+                            jSeient.put("comprador", rv.getString("nom_comprador"));
+                            jSeient.put("correu", rv.getString("correu"));
+                            jVenuts.put(jSeient);
+                        }
+                    }
+                    jZona.put("venuts", jVenuts);
+                    jZones.put(jZona);
+                }
+            }
+        } catch (SQLException e) {
+            enviarError(conn, "No s'ha pogut obtenir el mapa");
+            return;
+        }
+
+        resposta.put("type", "mapa");
+        resposta.put("idEsdeveniment", idEsdeveniment);
+        resposta.put("zones", jZones);
+        conn.send(resposta.toString());
+    }
+    
     private void migrarSiBuida(Connection connexio) {
         try (Statement st = connexio.createStatement();
              ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM esdeveniments")) {
@@ -201,6 +270,9 @@ public class WsServer extends WebSocketServer {
                 Cataleg catalegXml = leer_catalogo.carregarCataleg(new File("data", "esdeveniments.xml"));
                 leer_catalogo.migrarCatalegABaseDeDades(catalegXml, connexio);
                 System.out.println("Catàleg migrat de l'XML a la BD");
+            
+                BaseDades.executarScript("BD/dades_test.sql");
+                System.out.println("Dades de test inserides a la BD");
             }
         } catch (SQLException e) {
             System.out.println("Error en migrar el catàleg a la BD: " + e.getMessage());
