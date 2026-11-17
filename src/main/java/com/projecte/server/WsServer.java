@@ -442,135 +442,204 @@ public class WsServer extends WebSocketServer {
         conn.send(resposta.toString());
     }
 
-    private void processarCompraSQL (WebSocket conn, JSONObject peticio){
+    private synchronized void processarCompraSQL(WebSocket conn, JSONObject peticio) {
         String nom = peticio.optString("nom");
         String correu = peticio.optString("correu");
         JSONArray entrades = peticio.optJSONArray("entrades");
+        JSONArray seients = peticio.optJSONArray("seients");
 
-        if (entrades == null){
-            enviarError(conn, "No hi ha entrades a la cistella");
+        boolean teEntrades = entrades != null && entrades.length() > 0;
+        boolean teSeients = seients != null && seients.length() > 0;
+
+        if (!teEntrades && !teSeients) {
+            enviarError(conn, "No hi ha entrades ni butaques a la cistella");
             return;
         }
 
-        for(int i = 0; i < entrades.length(); i++){
-            JSONObject linia = entrades.getJSONObject(i);
-            Esdeveniment esdeveniment = cataleg.getEsdeveniment(linia.optString("idEsdeveniment"));
-            TipusEntrada tipusEntrada = null;
-            if (esdeveniment != null){
-                tipusEntrada = esdeveniment.getTipusEntrada(linia.optString("idTipus"));
-            }
-            if (tipusEntrada == null || linia.optInt("quantitat") > tipusEntrada.getQuota()){
-                enviarError(conn, "No es poden revervar les entrades (quota insuficient)");
-                return;
+        // 1. Validem prèviament que les entrades generals tenen quota suficient
+        if (teEntrades) {
+            for (int i = 0; i < entrades.length(); i++) {
+                JSONObject linia = entrades.getJSONObject(i);
+                Esdeveniment esdeveniment = cataleg.getEsdeveniment(linia.optString("idEsdeveniment"));
+                TipusEntrada tipusEntrada = (esdeveniment != null)
+                        ? esdeveniment.getTipusEntrada(linia.optString("idTipus")) : null;
+
+                if (tipusEntrada == null || linia.optInt("quantitat") > tipusEntrada.getQuota()) {
+                    enviarError(conn, "No es poden reservar les entrades (quota insuficient)");
+                    return;
+                }
             }
         }
 
         String sqlCompra = "INSERT INTO compres (localitzador_compra, nom_comprador, correu) VALUES (?, ?, ?)";
         String sqlGetTipusId = "SELECT t.tipus_entrada_id, t.preu FROM tipus_entrada t " +
-                           "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
-                           "WHERE e.codi = ? AND t.codi = ?";
-        String sqlInsertEntrada = "INSERT INTO entrades (compra_id, tipus_entrada_id, localitzador_entrada, preu_pagat) VALUES (?, ?, ?, ?)";
+                               "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                               "WHERE e.codi = ? AND t.codi = ?";
+        String sqlCheckSeient = "SELECT COUNT(*) FROM entrades WHERE tipus_entrada_id = ? AND fila = ? AND seient = ?";
+        String sqlInsertEntrada = "INSERT INTO entrades (compra_id, tipus_entrada_id, localitzador_entrada, fila, seient, preu_pagat) " +
+                                  "VALUES (?, ?, ?, ?, ?, ?)";
 
         Connection connection = null;
         JSONArray localitzadors = new JSONArray();
+        JSONArray seientsRebutjats = new JSONArray();
 
         try {
             connection = BaseDades.getConnexio();
-            
-            // Desactivamos autoCommit para que sea una transacción unificada y segura
             connection.setAutoCommit(false);
-            
-            // 1. Generamos un localizador único general para toda la compra (ej: LC-34829104)
-            String localitzadorCompra = "LC-" + (10000000 + random.nextInt(90000000));
 
-            // 2. Preparamos el Statement de la compra pidiéndole que nos retorne la clave primaria generada (compra_id)
+            String localitzadorCompra = "LC-" + (10000000 + random.nextInt(90000000));
             PreparedStatement psCompra = connection.prepareStatement(sqlCompra, Statement.RETURN_GENERATED_KEYS);
             psCompra.setString(1, localitzadorCompra);
             psCompra.setString(2, nom);
             psCompra.setString(3, correu);
             psCompra.executeUpdate();
 
-            // 3. Recuperamos el ID autoincremental que SQLite le ha asignado a esta compra
             ResultSet rsIdCompra = psCompra.getGeneratedKeys();
-            int idCompraGenerat = 0;
-            if (rsIdCompra.next()){
-                idCompraGenerat = rsIdCompra.getInt(1);
-            }
-
+            int idCompraGenerat = rsIdCompra.next() ? rsIdCompra.getInt(1) : 0;
             rsIdCompra.close();
             psCompra.close();
 
-            // 4. Preparamos los statements para las consultas internas del bucle
             PreparedStatement psGetTipus = connection.prepareStatement(sqlGetTipusId);
+            PreparedStatement psCheckSeient = connection.prepareStatement(sqlCheckSeient);
             PreparedStatement psEntrada = connection.prepareStatement(sqlInsertEntrada);
 
-            // 5. Recorremos cada línea de la cistella
-            for (int i = 0; i < entrades.length(); i++){
-                JSONObject linia = entrades.getJSONObject(i);
-                String idEsdeveniment = linia.getString("idEsdeveniment");
-                String idTipus = linia.getString("idTipus");
-                int quantitat = linia.getInt("quantitat");
+            // 2. Processem les butaques numerades ("seients")
+            if (teSeients) {
+                for (int i = 0; i < seients.length(); i++) {
+                    JSONObject s = seients.getJSONObject(i);
+                    String idEsdeveniment = s.getString("idEsdeveniment");
+                    String idTipus = s.getString("idTipus");
+                    int fila = s.getInt("fila");
+                    int seient = s.getInt("seient");
 
-                // Restamos la cuota en la memoria del servidor (catálogo)
-                TipusEntrada tipusMemoria = cataleg.getEsdeveniment(idEsdeveniment).getTipusEntrada(idTipus);
-                tipusMemoria.restarQuota(quantitat);
+                    psGetTipus.setString(1, idEsdeveniment);
+                    psGetTipus.setString(2, idTipus);
+                    ResultSet rsTipus = psGetTipus.executeQuery();
 
-                // 6. Consultamos la base de datos para obtener el ID numérico interno y el precio real
-                psGetTipus.setString(1, idEsdeveniment);
-                psGetTipus.setString(2, idTipus);
+                    if (!rsTipus.next()) {
+                        rsTipus.close();
+                        seientsRebutjats.put(s);
+                        continue;
+                    }
+                    int tipusIdIntern = rsTipus.getInt("tipus_entrada_id");
+                    double preuPagat = rsTipus.getDouble("preu");
+                    rsTipus.close();
 
-                ResultSet rsTipusId = psGetTipus.executeQuery();
+                    // Comprovem si la butaca ja està venuda
+                    psCheckSeient.setInt(1, tipusIdIntern);
+                    psCheckSeient.setInt(2, fila);
+                    psCheckSeient.setInt(3, seient);
+                    ResultSet rsCheck = psCheckSeient.executeQuery();
+                    boolean ocupat = rsCheck.next() && rsCheck.getInt(1) > 0;
+                    rsCheck.close();
 
-                int tipusEntradesIdIntern = 0;
-                double preuPagat = 0.0;
+                    if (ocupat) {
+                        seientsRebutjats.put(s);
+                    } else {
+                        String locEntrada = idEsdeveniment + "-" + (10000000 + random.nextInt(90000000));
+                        localitzadors.put(locEntrada);
 
-                if (rsTipusId.next()){
-                    tipusEntradesIdIntern = rsTipusId.getInt("tipus_entrada_id");
-                    preuPagat = rsTipusId.getDouble("preu");
+                        psEntrada.setInt(1, idCompraGenerat);
+                        psEntrada.setInt(2, tipusIdIntern);
+                        psEntrada.setString(3, locEntrada);
+                        psEntrada.setInt(4, fila);
+                        psEntrada.setInt(5, seient);
+                        psEntrada.setDouble(6, preuPagat);
+                        psEntrada.executeUpdate();
+                    }
                 }
-                rsTipusId.close();
+            }
 
-                // 7. Creamos tantos registros de entradas individuales como indique la 'quantitat'
-                for (int j = 0; j < quantitat; j++){
-                    String localitzadorEntrada = idEsdeveniment + "-" + (10000000 + random.nextInt(90000000));
-                    localitzadors.put(localitzadorEntrada);
+            // Si alguna butaca ja estava venuda, fem rollback de TOTA la compra i retornem seientsRebutjats
+            if (seientsRebutjats.length() > 0) {
+                psGetTipus.close();
+                psCheckSeient.close();
+                psEntrada.close();
+                connection.rollback();
 
-                    psEntrada.setInt(1, idCompraGenerat);
-                    psEntrada.setInt(2, tipusEntradesIdIntern);
-                    psEntrada.setString(3, localitzadorEntrada);
-                    psEntrada.setDouble(4, preuPagat);
-                    psEntrada.executeUpdate();
+                JSONObject err = new JSONObject();
+                err.put("type", "error");
+                err.put("message", "Algunes butaques ja estan venudes");
+                err.put("seientsRebutjats", seientsRebutjats);
+                conn.send(err.toString());
+                return;
+            }
+
+            // 3. Processem les entrades generals ("entrades")
+            if (teEntrades) {
+                for (int i = 0; i < entrades.length(); i++) {
+                    JSONObject linia = entrades.getJSONObject(i);
+                    String idEsdeveniment = linia.getString("idEsdeveniment");
+                    String idTipus = linia.getString("idTipus");
+                    int quantitat = linia.getInt("quantitat");
+
+                    psGetTipus.setString(1, idEsdeveniment);
+                    psGetTipus.setString(2, idTipus);
+                    ResultSet rsTipusId = psGetTipus.executeQuery();
+
+                    int tipusEntradesIdIntern = 0;
+                    double preuPagat = 0.0;
+                    if (rsTipusId.next()) {
+                        tipusEntradesIdIntern = rsTipusId.getInt("tipus_entrada_id");
+                        preuPagat = rsTipusId.getDouble("preu");
+                    }
+                    rsTipusId.close();
+
+                    for (int j = 0; j < quantitat; j++) {
+                        String localitzadorEntrada = idEsdeveniment + "-" + (10000000 + random.nextInt(90000000));
+                        localitzadors.put(localitzadorEntrada);
+
+                        psEntrada.setInt(1, idCompraGenerat);
+                        psEntrada.setInt(2, tipusEntradesIdIntern);
+                        psEntrada.setString(3, localitzadorEntrada);
+                        psEntrada.setNull(4, java.sql.Types.INTEGER);
+                        psEntrada.setNull(5, java.sql.Types.INTEGER);
+                        psEntrada.setDouble(6, preuPagat);
+                        psEntrada.executeUpdate();
+                    }
                 }
-
             }
 
             psGetTipus.close();
+            psCheckSeient.close();
             psEntrada.close();
 
-            // Si todo termina con éxito, guardamos de golpe en la base de datos
+            // 4. Confirmem la transacció a la BD i actualitzem quotes en memòria
             connection.commit();
 
-            // Retornamos los localizadores a la APP
+            if (teSeients) {
+                for (int i = 0; i < seients.length(); i++) {
+                    JSONObject s = seients.getJSONObject(i);
+                    cataleg.getEsdeveniment(s.getString("idEsdeveniment"))
+                           .getTipusEntrada(s.getString("idTipus")).restarQuota(1);
+                }
+            }
+            if (teEntrades) {
+                for (int i = 0; i < entrades.length(); i++) {
+                    JSONObject linia = entrades.getJSONObject(i);
+                    cataleg.getEsdeveniment(linia.getString("idEsdeveniment"))
+                           .getTipusEntrada(linia.getString("idTipus")).restarQuota(linia.getInt("quantitat"));
+                }
+            }
+
             JSONObject resposta = new JSONObject();
             resposta.put("type", "compraOk");
             resposta.put("localitzadors", localitzadors);
             conn.send(resposta.toString());
 
-
         } catch (Exception e) {
-            if (connection != null){
-                        // Si hay cualquier error de base de datos, deshacemos todo para no dejar registros basura
-                try {connection.rollback();} catch(SQLException ex){ex.printStackTrace();}
+            if (connection != null) {
+                try { connection.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
             }
-            System.err.println("Error SQL en procesar la compra: " +  e.getMessage());
+            System.err.println("Error SQL en processar la compra: " + e.getMessage());
             enviarError(conn, "No s'han pogut enregistrar les entrades a la base de dades");
-        } finally{
-            // Siempre restauramos el comportamiento por defecto de la conexión al terminar
-            if (connection != null){
-                try { connection.setAutoCommit(true);} catch (SQLException ex) {ex.printStackTrace();}
+        } finally {
+            if (connection != null) {
+                try { connection.setAutoCommit(true); } catch (SQLException ex) { ex.printStackTrace(); }
             }
         }
     }
+
  
     // Afegeix una reserva a data/<id_esdeveniment>.json (el crea si no existeix)
     private void desarReserva(String idEsde, JSONObject reserva) throws IOException {
