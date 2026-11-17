@@ -1,12 +1,12 @@
 package com.projecte.server;
 
-import java.sql.Statement;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class BaseDades {
     private static Connection conn = null;
@@ -41,6 +41,7 @@ public class BaseDades {
                     stmt.close();
                 }
             }
+            afegirColumnaEstat();
         }catch (IOException e){
             System.out.println("Error en trobar l'arxiu: " + e.getMessage());
         }catch (SQLException e){
@@ -60,6 +61,26 @@ public class BaseDades {
                 conn.close();
             }
         } catch (Exception e) {
+        }
+    }
+        // Afegeix la columna 'estat' a entrades si no existeix (valors: ACTIVA / VALIDADA)
+    private static void afegirColumnaEstat() {
+        try {
+            boolean existeix = false;
+            try (Statement st = conn.createStatement();
+                 java.sql.ResultSet rs = st.executeQuery("PRAGMA table_info(entrades)")) {
+                while (rs.next()) {
+                    if ("estat".equals(rs.getString("name"))) existeix = true;
+                }
+            }
+            if (!existeix) {
+                try (Statement st = conn.createStatement()) {
+                    st.execute("ALTER TABLE entrades ADD COLUMN estat TEXT NOT NULL DEFAULT 'ACTIVA'");
+                }
+                System.out.println("Columna 'estat' afegida a entrades");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error afegint la columna estat: " + e.getMessage());
         }
     }
 }
