@@ -110,13 +110,19 @@ public class WsServer extends WebSocketServer {
         } else if (type.equals("comprar")) {
             //processarCompra(conn, peticio); // Llamamos al nuevo método SQL
             processarCompraSQL(conn, peticio); // Llamamos al nuevo método SQL
+        } else if (type.equals("getEntrades")) {
         } else if (type.equals("getSeients")) {
             // Spec 22: l'APP demana l'estat de les butaques d'una zona numerada
             enviarSeients(conn, peticio.optString("idEsdeveniment"), peticio.optString("idTipus"));
         } else if (type.equals("getMapa")) {
             enviarMapa(conn, peticio.optString("idEsdeveniment"));
         } else if (type.equals("getEntrades")) {
+
             enviarEntrades(conn, peticio.optString("correu"));
+        } else if (type.equals("getEntradesVendudes")) {
+            enviarEntradesVendudes(conn, peticio.optString("idEsdeveniment"));
+        } else if (type.equals("validarEntrada")) {
+            validarEntrada(conn, peticio.optString("localitzador"));
         } else {
             enviarError(conn, "Tipus desconegut: " + type);
         }
@@ -194,6 +200,117 @@ public class WsServer extends WebSocketServer {
         JSONObject resposta = new JSONObject();
         resposta.put("type", "entrades");
         resposta.put("data", llista);
+        conn.send(resposta.toString());
+    }
+
+        // ===== Tasca 26: llistat cronològic d'entrades venudes d'un esdeveniment =====
+    private synchronized void enviarEntradesVendudes(WebSocket conn, String idEsdeveniment) {
+        String sql = "SELECT c.data_compra, en.localitzador_entrada, t.nom AS tipus, " +
+                     "en.fila, en.seient, c.nom_comprador, en.estat " +
+                     "FROM entrades en " +
+                     "JOIN compres c ON en.compra_id = c.compra_id " +
+                     "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                     "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                     "WHERE e.codi = ? " +
+                     "ORDER BY c.data_compra ASC, en.entrada_id ASC";
+
+        JSONArray llista = new JSONArray();
+
+        try (PreparedStatement ps = BaseDades.getConnexio().prepareStatement(sql)) {
+            ps.setString(1, idEsdeveniment);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Les entrades generals no tenen seient (fila i seient a NULL)
+                    int fila = rs.getInt("fila");
+                    String seient = rs.wasNull() ? "" : "Fila " + fila + " - Seient " + rs.getInt("seient");
+
+                    JSONObject entrada = new JSONObject();
+                    entrada.put("dataCompra", rs.getString("data_compra"));
+                    entrada.put("localitzador", rs.getString("localitzador_entrada"));
+                    entrada.put("tipus", rs.getString("tipus"));
+                    entrada.put("seient", seient);
+                    entrada.put("comprador", rs.getString("nom_comprador"));
+                    entrada.put("estat", rs.getString("estat"));
+                    llista.put(entrada);
+                }
+            }
+        } catch (SQLException e) {
+            enviarError(conn, "No s'han pogut obtenir les entrades venudes");
+            return;
+        }
+
+        JSONObject resposta = new JSONObject();
+        resposta.put("type", "entradesVendudes");
+        resposta.put("idEsdeveniment", idEsdeveniment);
+        resposta.put("data", llista);
+        conn.send(resposta.toString());
+    }
+
+    // ===== Tasca 28: validar una entrada pel seu localitzador =====
+    private synchronized void validarEntrada(WebSocket conn, String localitzador) {
+        localitzador = localitzador.trim();
+
+        if (localitzador.isEmpty()) {
+            enviarValidacioError(conn, "BUIT", "Cal introduir un localitzador");
+            return;
+        }
+
+        // Una sola sentència atòmica: només marca si encara no estava validada
+        String sqlMarcar = "UPDATE entrades SET estat = 'VALIDADA' " +
+                           "WHERE localitzador_entrada = ? AND estat <> 'VALIDADA'";
+        String sqlDades = "SELECT c.nom_comprador, t.nom AS tipus, en.fila, en.seient " +
+                          "FROM entrades en " +
+                          "JOIN compres c ON en.compra_id = c.compra_id " +
+                          "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                          "WHERE en.localitzador_entrada = ?";
+
+        try {
+            Connection connexio = BaseDades.getConnexio();
+
+            int canvis;
+            try (PreparedStatement ps = connexio.prepareStatement(sqlMarcar)) {
+                ps.setString(1, localitzador);
+                canvis = ps.executeUpdate();   // 1 = acabada de validar, 0 = no existeix o ja validada
+            }
+
+            try (PreparedStatement ps = connexio.prepareStatement(sqlDades)) {
+                ps.setString(1, localitzador);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        enviarValidacioError(conn, "NO_EXISTEIX", "El localitzador no existeix");
+                        return;
+                    }
+                    if (canvis == 0) {
+                        enviarValidacioError(conn, "JA_VALIDADA", "Aquesta entrada ja ha estat validada");
+                        return;
+                    }
+
+                    int fila = rs.getInt("fila");
+                    String seient = rs.wasNull() ? "" : "Fila " + fila + " - Seient " + rs.getInt("seient");
+
+                    JSONObject resposta = new JSONObject();
+                    resposta.put("type", "validacio");
+                    resposta.put("ok", true);
+                    resposta.put("titular", rs.getString("nom_comprador"));
+                    resposta.put("tipus", rs.getString("tipus"));
+                    resposta.put("seient", seient);
+                    conn.send(resposta.toString());
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error validant l'entrada: " + e.getMessage());
+            enviarError(conn, "No s'ha pogut validar l'entrada");
+        }
+    }
+
+    private void enviarValidacioError(WebSocket conn, String motiu, String missatge) {
+        JSONObject resposta = new JSONObject();
+        resposta.put("type", "validacio");
+        resposta.put("ok", false);
+        resposta.put("motiu", motiu);
+        resposta.put("missatge", missatge);
         conn.send(resposta.toString());
     }
 
