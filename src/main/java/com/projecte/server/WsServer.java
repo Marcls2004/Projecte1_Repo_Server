@@ -110,6 +110,9 @@ public class WsServer extends WebSocketServer {
         } else if (type.equals("comprar")) {
             //processarCompra(conn, peticio); // Llamamos al nuevo método SQL
             processarCompraSQL(conn, peticio); // Llamamos al nuevo método SQL
+        } else if (type.equals("getSeients")) {
+            // Spec 22: l'APP demana l'estat de les butaques d'una zona numerada
+            enviarSeients(conn, peticio.optString("idEsdeveniment"), peticio.optString("idTipus"));
         } else if (type.equals("getMapa")) {
             enviarMapa(conn, peticio.optString("idEsdeveniment"));
         } else if (type.equals("getEntrades")) {
@@ -191,6 +194,71 @@ public class WsServer extends WebSocketServer {
         JSONObject resposta = new JSONObject();
         resposta.put("type", "entrades");
         resposta.put("data", llista);
+        conn.send(resposta.toString());
+    }
+
+    // Spec 22: envia l'estat de les butaques de la zona d'un tipus d'entrada numerada, per a un esdeveniment.
+    // Petició:  {"type":"getSeients","idEsdeveniment":"E1","idTipus":"T1_CEN"}
+    // Resposta: {"type":"seients","idEsdeveniment","idTipus","nomTipus","preu","zona",
+    //            "numFiles","seientsPerFila","venuts":[{"fila":1,"seient":2}, ...]}
+    private void enviarSeients(WebSocket conn, String idEsdeveniment, String idTipus) {
+        String sqlZona = "SELECT t.nom AS tipus, t.preu, e.esdeveniment_id, z.zona_id, z.nom AS zona, z.tipus AS tipus_zona, " +
+                         "z.num_files, z.seients_per_fila " +
+                         "FROM tipus_entrada t " +
+                         "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                         "JOIN zones z ON t.zona_id = z.zona_id " +
+                         "WHERE e.codi = ? AND t.codi = ?";
+
+        String sqlVenuts = "SELECT en.fila, en.seient " +
+                           "FROM entrades en " +
+                           "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                           "WHERE t.esdeveniment_id = ? AND t.zona_id = ? AND en.fila IS NOT NULL";
+
+        JSONObject resposta = new JSONObject();
+
+        try (PreparedStatement psZona = BaseDades.getConnexio().prepareStatement(sqlZona)) {
+            psZona.setString(1, idEsdeveniment);
+            psZona.setString(2, idTipus);
+
+            try (ResultSet rz = psZona.executeQuery()) {
+                if (!rz.next()) {
+                    enviarError(conn, "No existeix el tipus d'entrada " + idTipus + " a " + idEsdeveniment);
+                    return;
+                }
+                if (!"numerada".equals(rz.getString("tipus_zona"))) {
+                    enviarError(conn, "El tipus d'entrada " + idTipus + " no és numerat");
+                    return;
+                }
+
+                resposta.put("type", "seients");
+                resposta.put("idEsdeveniment", idEsdeveniment);
+                resposta.put("idTipus", idTipus);
+                resposta.put("nomTipus", rz.getString("tipus"));
+                resposta.put("preu", rz.getDouble("preu"));
+                resposta.put("zona", rz.getString("zona"));
+                resposta.put("numFiles", rz.getInt("num_files"));
+                resposta.put("seientsPerFila", rz.getInt("seients_per_fila"));
+
+                JSONArray venuts = new JSONArray();
+                try (PreparedStatement psVenuts = BaseDades.getConnexio().prepareStatement(sqlVenuts)) {
+                    psVenuts.setInt(1, rz.getInt("esdeveniment_id"));
+                    psVenuts.setInt(2, rz.getInt("zona_id"));
+                    try (ResultSet rv = psVenuts.executeQuery()) {
+                        while (rv.next()) {
+                            JSONObject seient = new JSONObject();
+                            seient.put("fila", rv.getInt("fila"));
+                            seient.put("seient", rv.getInt("seient"));
+                            venuts.put(seient);
+                        }
+                    }
+                }
+                resposta.put("venuts", venuts);
+            }
+        } catch (SQLException e) {
+            enviarError(conn, "No s'ha pogut obtenir l'estat de les butaques");
+            return;
+        }
+
         conn.send(resposta.toString());
     }
 
