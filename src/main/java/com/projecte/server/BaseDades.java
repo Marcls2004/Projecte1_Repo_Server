@@ -28,8 +28,13 @@ public class BaseDades {
     }
 
     private static void crearTaules(){
+        executarScript("BD/crear_bd.sql");
+    }
+
+    // Executa totes les sentències d'un fitxer .sql (separades per ;)
+    public static void executarScript(String ruta){
         try {
-            String contingut = Files.readString(Path.of("BD/crear_bd.sql"));
+            String contingut = Files.readString(Path.of(ruta));
             
             String[] consultes = contingut.split(";");
 
@@ -84,3 +89,4 @@ public class BaseDades {
         }
     }
 }
+
