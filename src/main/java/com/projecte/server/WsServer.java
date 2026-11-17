@@ -110,14 +110,12 @@ public class WsServer extends WebSocketServer {
         } else if (type.equals("comprar")) {
             //processarCompra(conn, peticio); // Llamamos al nuevo método SQL
             processarCompraSQL(conn, peticio); // Llamamos al nuevo método SQL
-        } else if (type.equals("getEntrades")) {
         } else if (type.equals("getSeients")) {
             // Spec 22: l'APP demana l'estat de les butaques d'una zona numerada
             enviarSeients(conn, peticio.optString("idEsdeveniment"), peticio.optString("idTipus"));
         } else if (type.equals("getMapa")) {
             enviarMapa(conn, peticio.optString("idEsdeveniment"));
         } else if (type.equals("getEntrades")) {
-
             enviarEntrades(conn, peticio.optString("correu"));
         } else if (type.equals("getEntradesVendudes")) {
             enviarEntradesVendudes(conn, peticio.optString("idEsdeveniment"));
