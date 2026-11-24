@@ -1,0 +1,776 @@
+package com.projecte.server;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Random;
+
+import org.java_websocket.WebSocket;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class WsServer extends WebSocketServer {
+
+    private Cataleg cataleg;
+    private Random random = new Random();
+    
+    public static void main(String[] args) throws InterruptedException, IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        int port = 80;
+        boolean running = true;
+
+        WsServer socket = new WsServer(port);
+        socket.start();
+        System.out.println("WsServer funciona al port: " + socket.getPort());
+
+        while (running) {
+            String line = in.readLine();
+            // Aturem el servidor amb 'exit' (o si es tanca la consola)
+            if (line == null || line.trim().equalsIgnoreCase("exit")) {
+                running = false;
+            }
+        }
+
+        System.out.println("Aturant WsServer");
+        socket.stop(1000);
+        BaseDades.tancar();
+        System.out.println("Servidor aturat de manera neta.");
+    }
+
+    public WsServer(int port) {
+        super(new InetSocketAddress(port));
+    }
+
+    public WsServer(InetSocketAddress address) {
+        super(address);
+    }
+
+    @Override
+    public void onOpen(WebSocket conn, ClientHandshake handshake) {
+
+        // Saludem personalment al nou client (en JSON, com tots els missatges)
+        JSONObject welcome = new JSONObject();
+        welcome.put("type", "welcome");
+        welcome.put("message", "Benvingut a WsServer");
+        conn.send(welcome.toString());
+
+        // Mostrem per pantalla (servidor) la nova connexió
+        String host = conn.getRemoteSocketAddress().getAddress().getHostAddress();
+        System.out.println(host + " s'ha connectat");
+    }
+
+    @Override
+    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+
+        // Mostrem per pantalla (servidor) la desconnexió
+        String host = conn.getRemoteSocketAddress().getAddress().getHostAddress();
+        System.out.println(host + " s'ha desconnectat (codi " + code + ")");
+    }
+
+    @Override
+    public void onMessage(WebSocket conn, String message) {
+        JSONObject peticio;
+        try {
+            peticio = new JSONObject(message);
+            System.out.println("Mensaje recibido: " + peticio.toString());
+        } catch (JSONException e) {
+            enviarError(conn, "El missatge no és JSON valid");
+            return;
+        }
+
+        String type = peticio.optString("type", "");
+
+        JSONObject resposta = new JSONObject();
+
+        if (type.equals("ping")) {
+            resposta.put("type", "pong");
+            conn.send(resposta.toString());
+        } else if (type.equals("bounce")) {
+            conn.send(peticio.toString());
+        } else if (type.equals("getEsdeveniments")) {
+            if (cataleg == null) {
+                enviarError(conn, "El catàleg no s'ha carregat correctament");
+            } else {
+                resposta.put("type", "esdeveniments");
+                resposta.put("data", construirLlistaEsdeveniments());
+                conn.send(resposta.toString());
+            }
+        } else if (type.equals("comprar")) {
+            //processarCompra(conn, peticio); // Llamamos al nuevo método SQL
+            processarCompraSQL(conn, peticio); // Llamamos al nuevo método SQL
+        } else if (type.equals("getSeients")) {
+            // Spec 22: l'APP demana l'estat de les butaques d'una zona numerada
+            enviarSeients(conn, peticio.optString("idEsdeveniment"), peticio.optString("idTipus"));
+        } else if (type.equals("getMapa")) {
+            enviarMapa(conn, peticio.optString("idEsdeveniment"));
+        } else if (type.equals("getEntrades")) {
+            enviarEntrades(conn, peticio.optString("correu"));
+        } else if (type.equals("getEntradesVendudes")) {
+            enviarEntradesVendudes(conn, peticio.optString("idEsdeveniment"));
+        } else if (type.equals("validarEntrada")) {
+            validarEntrada(conn, peticio.optString("localitzador"));
+        } else {
+            enviarError(conn, "Tipus desconegut: " + type);
+        }
+    }
+
+    @Override
+    public void onError(WebSocket conn, Exception ex) {
+
+        // conn és null si l'error és del servidor (p. ex. el port ja està ocupat)
+        if (conn == null) {
+            System.out.println("Error del servidor: " + ex.getMessage());
+        } else {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onStart() {
+        // S'inicia el servidor
+        //File fitxer = new File("data", "esdeveniments.xml");
+        //cataleg = leer_catalogo.carregarCataleg(fitxer);
+        
+        
+        //URL provisional para luego cambiarla por la bueno
+        BaseDades.conectar();
+
+        migrarSiBuida(BaseDades.getConnexio());
+
+        cataleg = leer_catalogo.carregar_SQL(BaseDades.getConnexio());
+        
+        if (cataleg == null) {
+            System.out.println("ERROR: no s'ha pogut carregar el cataleg");
+        } else {
+            System.out.println("Catàleg carregat: " + cataleg.getEsdeveniments().size() + " esdeveniments");
+        }
+
+        System.out.println("Escriu 'exit' per aturar el servidor");
+        setConnectionLostTimeout(100);
+    }
+
+    private void enviarEntrades(WebSocket conn, String correu) {
+        String sql = "SELECT e.nom AS esdeveniment, t.nom AS tipus, en.fila, en.seient, " +
+                     "c.nom_comprador AS titular, en.localitzador_entrada AS localitzador " +
+                     "FROM entrades en " +
+                     "JOIN compres c ON en.compra_id = c.compra_id " +
+                     "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                     "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                     "WHERE c.correu = ?";
+ 
+        JSONArray llista = new JSONArray();
+ 
+        try (PreparedStatement ps = BaseDades.getConnexio().prepareStatement(sql)) {
+            ps.setString(1, correu);
+ 
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Les entrades generals no tenen seient (fila i seient a NULL)
+                    int fila = rs.getInt("fila");
+                    String seient = rs.wasNull() ? "" : "Fila " + fila + " - Seient " + rs.getInt("seient");
+ 
+                    JSONObject entrada = new JSONObject();
+                    entrada.put("esdeveniment", rs.getString("esdeveniment"));
+                    entrada.put("tipus", rs.getString("tipus"));
+                    entrada.put("seient", seient);
+                    entrada.put("titular", rs.getString("titular"));
+                    entrada.put("localitzador", rs.getString("localitzador"));
+                    llista.put(entrada);
+                }
+            }
+        } catch (SQLException e) {
+            enviarError(conn, "No s'han pogut obtenir les entrades");
+            return;
+        }
+ 
+        JSONObject resposta = new JSONObject();
+        resposta.put("type", "entrades");
+        resposta.put("data", llista);
+        conn.send(resposta.toString());
+    }
+
+        // ===== Tasca 26: llistat cronològic d'entrades venudes d'un esdeveniment =====
+    private synchronized void enviarEntradesVendudes(WebSocket conn, String idEsdeveniment) {
+        String sql = "SELECT c.data_compra, en.localitzador_entrada, t.nom AS tipus, " +
+                     "en.fila, en.seient, c.nom_comprador, en.estat " +
+                     "FROM entrades en " +
+                     "JOIN compres c ON en.compra_id = c.compra_id " +
+                     "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                     "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                     "WHERE e.codi = ? " +
+                     "ORDER BY c.data_compra ASC, en.entrada_id ASC";
+
+        JSONArray llista = new JSONArray();
+
+        try (PreparedStatement ps = BaseDades.getConnexio().prepareStatement(sql)) {
+            ps.setString(1, idEsdeveniment);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Les entrades generals no tenen seient (fila i seient a NULL)
+                    int fila = rs.getInt("fila");
+                    String seient = rs.wasNull() ? "" : "Fila " + fila + " - Seient " + rs.getInt("seient");
+
+                    JSONObject entrada = new JSONObject();
+                    entrada.put("dataCompra", rs.getString("data_compra"));
+                    entrada.put("localitzador", rs.getString("localitzador_entrada"));
+                    entrada.put("tipus", rs.getString("tipus"));
+                    entrada.put("seient", seient);
+                    entrada.put("comprador", rs.getString("nom_comprador"));
+                    entrada.put("estat", rs.getString("estat"));
+                    llista.put(entrada);
+                }
+            }
+        } catch (SQLException e) {
+            enviarError(conn, "No s'han pogut obtenir les entrades venudes");
+            return;
+        }
+
+        JSONObject resposta = new JSONObject();
+        resposta.put("type", "entradesVendudes");
+        resposta.put("idEsdeveniment", idEsdeveniment);
+        resposta.put("data", llista);
+        conn.send(resposta.toString());
+    }
+
+    // ===== Tasca 28: validar una entrada pel seu localitzador =====
+    private synchronized void validarEntrada(WebSocket conn, String localitzador) {
+        localitzador = localitzador.trim();
+
+        if (localitzador.isEmpty()) {
+            enviarValidacioError(conn, "BUIT", "Cal introduir un localitzador");
+            return;
+        }
+
+        // Una sola sentència atòmica: només marca si encara no estava validada
+        String sqlMarcar = "UPDATE entrades SET estat = 'VALIDADA' " +
+                           "WHERE localitzador_entrada = ? AND estat <> 'VALIDADA'";
+        String sqlDades = "SELECT c.nom_comprador, t.nom AS tipus, en.fila, en.seient " +
+                          "FROM entrades en " +
+                          "JOIN compres c ON en.compra_id = c.compra_id " +
+                          "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                          "WHERE en.localitzador_entrada = ?";
+
+        try {
+            Connection connexio = BaseDades.getConnexio();
+
+            int canvis;
+            try (PreparedStatement ps = connexio.prepareStatement(sqlMarcar)) {
+                ps.setString(1, localitzador);
+                canvis = ps.executeUpdate();   // 1 = acabada de validar, 0 = no existeix o ja validada
+            }
+
+            try (PreparedStatement ps = connexio.prepareStatement(sqlDades)) {
+                ps.setString(1, localitzador);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        enviarValidacioError(conn, "NO_EXISTEIX", "El localitzador no existeix");
+                        return;
+                    }
+                    if (canvis == 0) {
+                        enviarValidacioError(conn, "JA_VALIDADA", "Aquesta entrada ja ha estat validada");
+                        return;
+                    }
+
+                    int fila = rs.getInt("fila");
+                    String seient = rs.wasNull() ? "" : "Fila " + fila + " - Seient " + rs.getInt("seient");
+
+                    JSONObject resposta = new JSONObject();
+                    resposta.put("type", "validacio");
+                    resposta.put("ok", true);
+                    resposta.put("titular", rs.getString("nom_comprador"));
+                    resposta.put("tipus", rs.getString("tipus"));
+                    resposta.put("seient", seient);
+                    conn.send(resposta.toString());
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error validant l'entrada: " + e.getMessage());
+            enviarError(conn, "No s'ha pogut validar l'entrada");
+        }
+    }
+
+    private void enviarValidacioError(WebSocket conn, String motiu, String missatge) {
+        JSONObject resposta = new JSONObject();
+        resposta.put("type", "validacio");
+        resposta.put("ok", false);
+        resposta.put("motiu", motiu);
+        resposta.put("missatge", missatge);
+        conn.send(resposta.toString());
+    }
+
+    // Spec 22: envia l'estat de les butaques de la zona d'un tipus d'entrada numerada, per a un esdeveniment.
+    // Petició:  {"type":"getSeients","idEsdeveniment":"E1","idTipus":"T1_CEN"}
+    // Resposta: {"type":"seients","idEsdeveniment","idTipus","nomTipus","preu","zona",
+    //            "numFiles","seientsPerFila","venuts":[{"fila":1,"seient":2}, ...]}
+    private void enviarSeients(WebSocket conn, String idEsdeveniment, String idTipus) {
+        String sqlZona = "SELECT t.nom AS tipus, t.preu, e.esdeveniment_id, z.zona_id, z.nom AS zona, z.tipus AS tipus_zona, " +
+                         "z.num_files, z.seients_per_fila " +
+                         "FROM tipus_entrada t " +
+                         "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                         "JOIN zones z ON t.zona_id = z.zona_id " +
+                         "WHERE e.codi = ? AND t.codi = ?";
+
+        String sqlVenuts = "SELECT en.fila, en.seient " +
+                           "FROM entrades en " +
+                           "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                           "WHERE t.esdeveniment_id = ? AND t.zona_id = ? AND en.fila IS NOT NULL";
+
+        JSONObject resposta = new JSONObject();
+
+        try (PreparedStatement psZona = BaseDades.getConnexio().prepareStatement(sqlZona)) {
+            psZona.setString(1, idEsdeveniment);
+            psZona.setString(2, idTipus);
+
+            try (ResultSet rz = psZona.executeQuery()) {
+                if (!rz.next()) {
+                    enviarError(conn, "No existeix el tipus d'entrada " + idTipus + " a " + idEsdeveniment);
+                    return;
+                }
+                if (!"numerada".equals(rz.getString("tipus_zona"))) {
+                    enviarError(conn, "El tipus d'entrada " + idTipus + " no és numerat");
+                    return;
+                }
+
+                resposta.put("type", "seients");
+                resposta.put("idEsdeveniment", idEsdeveniment);
+                resposta.put("idTipus", idTipus);
+                resposta.put("nomTipus", rz.getString("tipus"));
+                resposta.put("preu", rz.getDouble("preu"));
+                resposta.put("zona", rz.getString("zona"));
+                resposta.put("numFiles", rz.getInt("num_files"));
+                resposta.put("seientsPerFila", rz.getInt("seients_per_fila"));
+
+                JSONArray venuts = new JSONArray();
+                try (PreparedStatement psVenuts = BaseDades.getConnexio().prepareStatement(sqlVenuts)) {
+                    psVenuts.setInt(1, rz.getInt("esdeveniment_id"));
+                    psVenuts.setInt(2, rz.getInt("zona_id"));
+                    try (ResultSet rv = psVenuts.executeQuery()) {
+                        while (rv.next()) {
+                            JSONObject seient = new JSONObject();
+                            seient.put("fila", rv.getInt("fila"));
+                            seient.put("seient", rv.getInt("seient"));
+                            venuts.put(seient);
+                        }
+                    }
+                }
+                resposta.put("venuts", venuts);
+            }
+        } catch (SQLException e) {
+            enviarError(conn, "No s'ha pogut obtenir l'estat de les butaques");
+            return;
+        }
+
+        conn.send(resposta.toString());
+    }
+
+    private void enviarMapa(WebSocket conn, String idEsdeveniment) {
+        String sqlZones = "SELECT z.zona_id, z.codi, z.nom, z.tipus, z.aforament, z.num_files, z.seients_per_fila, " +
+                          "z.fila_inici, z.columna_inici, e.esdeveniment_id, e.nom AS esdeveniment, r.nom AS recinte " +
+                          "FROM esdeveniments e " +
+                          "JOIN recintes r ON e.recinte_id = r.recinte_id " +
+                          "JOIN zones z ON z.recinte_id = r.recinte_id " +
+                          "WHERE e.codi = ? ORDER BY z.zona_id";
+
+        String sqlVenudes = "SELECT en.fila, en.seient, en.localitzador_entrada, t.nom AS tipus, " +
+                            "c.nom_comprador, c.correu " +
+                            "FROM entrades en " +
+                            "JOIN tipus_entrada t ON en.tipus_entrada_id = t.tipus_entrada_id " +
+                            "JOIN compres c ON en.compra_id = c.compra_id " +
+                            "WHERE t.esdeveniment_id = ? AND t.zona_id = ?";
+
+        JSONObject resposta = new JSONObject();
+        JSONArray jZones = new JSONArray();
+
+        try (PreparedStatement psZones = BaseDades.getConnexio().prepareStatement(sqlZones);
+             PreparedStatement psVenudes = BaseDades.getConnexio().prepareStatement(sqlVenudes)) {
+
+            psZones.setString(1, idEsdeveniment);
+            try (ResultSet rz = psZones.executeQuery()) {
+                while (rz.next()) {
+                    resposta.put("esdeveniment", rz.getString("esdeveniment"));
+                    resposta.put("recinte", rz.getString("recinte"));
+
+                    JSONObject jZona = new JSONObject();
+                    jZona.put("codi", rz.getString("codi"));
+                    jZona.put("nom", rz.getString("nom"));
+                    jZona.put("tipus", rz.getString("tipus"));
+                    jZona.put("aforament", rz.getInt("aforament"));
+                    jZona.put("numFiles", rz.getInt("num_files"));          // 0 a les generals
+                    jZona.put("seientsPerFila", rz.getInt("seients_per_fila"));
+                    jZona.put("filaInici", rz.getInt("fila_inici"));
+                    jZona.put("columnaInici", rz.getInt("columna_inici"));
+
+                    // Entrades venudes d'aquest esdeveniment en aquesta zona
+                    JSONArray jVenuts = new JSONArray();
+                    psVenudes.setInt(1, rz.getInt("esdeveniment_id"));
+                    psVenudes.setInt(2, rz.getInt("zona_id"));
+                    try (ResultSet rv = psVenudes.executeQuery()) {
+                        while (rv.next()) {
+                            JSONObject jSeient = new JSONObject();
+                            jSeient.put("fila", rv.getInt("fila"));        // 0 a les generals
+                            jSeient.put("seient", rv.getInt("seient"));
+                            jSeient.put("localitzador", rv.getString("localitzador_entrada"));
+                            jSeient.put("tipus", rv.getString("tipus"));
+                            jSeient.put("comprador", rv.getString("nom_comprador"));
+                            jSeient.put("correu", rv.getString("correu"));
+                            jVenuts.put(jSeient);
+                        }
+                    }
+                    jZona.put("venuts", jVenuts);
+                    jZones.put(jZona);
+                }
+            }
+        } catch (SQLException e) {
+            enviarError(conn, "No s'ha pogut obtenir el mapa");
+            return;
+        }
+
+        resposta.put("type", "mapa");
+        resposta.put("idEsdeveniment", idEsdeveniment);
+        resposta.put("zones", jZones);
+        conn.send(resposta.toString());
+    }
+    
+    private void migrarSiBuida(Connection connexio) {
+        try (Statement st = connexio.createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM esdeveniments")) {
+ 
+            if (rs.next() && rs.getInt(1) == 0) {
+                Cataleg catalegXml = leer_catalogo.carregarCataleg(new File("data", "esdeveniments.xml"));
+                leer_catalogo.migrarCatalegABaseDeDades(catalegXml, connexio);
+                System.out.println("Catàleg migrat de l'XML a la BD");
+            
+                BaseDades.executarScript("BD/dades_test.sql");
+                System.out.println("Dades de test inserides a la BD");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error en migrar el catàleg a la BD: " + e.getMessage());
+        }
+    }
+    
+    private JSONArray construirLlistaEsdeveniments() {
+        JSONArray jLlistaEsdeveniments = new JSONArray();
+ 
+        for (Esdeveniment esde : cataleg.getEsdeveniments()) {
+            JSONObject jEsde = new JSONObject();
+            jEsde.put("id", esde.getId());
+            jEsde.put("nom", esde.getNom());
+            jEsde.put("dataHora", esde.getDataHora());
+            jEsde.put("categoria", esde.getCategoria());
+            jEsde.put("descripcio", esde.getDescripcio());
+ 
+            JSONArray jTipusEntrades = new JSONArray();
+            for (TipusEntrada tipus : esde.getTipusEntrades()) {
+                JSONObject jTipus = new JSONObject();
+                jTipus.put("idTipus", tipus.getId());
+                jTipus.put("nomTipus", tipus.getNom());
+                jTipus.put("preuTipus", tipus.getPreu());
+                jTipus.put("quotaTipus", tipus.getQuota());   // entrades disponibles
+ 
+                // Tipus de zona (general / numerada) perquè l'APP pugui filtrar
+                Zona zona = cataleg.getZonaDe(esde, tipus);
+                if (zona != null) {
+                    jTipus.put("tipusZona", zona.getTipus());
+                }
+ 
+                jTipusEntrades.put(jTipus);
+            }
+            jEsde.put("tipusEntrades", jTipusEntrades);
+ 
+            jLlistaEsdeveniments.put(jEsde);
+        }
+        return jLlistaEsdeveniments;
+    }
+
+    private void processarCompra(WebSocket conn, JSONObject peticio) {
+        String nom = peticio.optString("nom");
+        String correu = peticio.optString("correu");
+        JSONArray entrades = peticio.optJSONArray("entrades");
+ 
+        if (entrades == null) {
+            enviarError(conn, "No hi ha entrades a la cistella");
+            return;
+        }
+ 
+        // Comprovem que totes les entrades existeixen i que en queden prou
+        for (int i = 0; i < entrades.length(); i++) {
+            JSONObject linia = entrades.getJSONObject(i);
+            Esdeveniment esde = cataleg.getEsdeveniment(linia.optString("idEsdeveniment"));
+            TipusEntrada tipus = null;
+
+            if (esde != null) {
+                tipus = esde.getTipusEntrada(linia.optString("idTipus"));
+            }
+ 
+            if (tipus == null || linia.optInt("quantitat") > tipus.getQuota()) {
+                enviarError(conn, "No es poden reservar les entrades");
+                return;
+            }
+        }
+ 
+        // Reservem: un localitzador per entrada, desat a <id_esdeveniment>.json
+        JSONArray localitzadors = new JSONArray();
+        try {
+            for (int i = 0; i < entrades.length(); i++) {
+                JSONObject linia = entrades.getJSONObject(i);
+                String idEsde = linia.getString("idEsdeveniment");
+                TipusEntrada tipus = cataleg.getEsdeveniment(idEsde).getTipusEntrada(linia.getString("idTipus"));
+                int quantitat = linia.getInt("quantitat");
+ 
+                tipus.restarQuota(quantitat);
+ 
+                for (int j = 0; j < quantitat; j++) {
+                    String localitzador = idEsde + "-" + (10000000 + random.nextInt(90000000));
+                    localitzadors.put(localitzador);
+ 
+                    JSONObject reserva = new JSONObject();
+                    reserva.put("idTipus", tipus.getId());
+                    reserva.put("localitzador", localitzador);
+                    reserva.put("nom", nom);
+                    reserva.put("correu", correu);
+                    desarReserva(idEsde, reserva);
+                }
+            }
+        } catch (IOException e) {
+            enviarError(conn, "No s'han pogut enregistrar les entrades");
+            return;
+        }
+ 
+        // Retornem els localitzadors a l'APP
+        JSONObject resposta = new JSONObject();
+        resposta.put("type", "compraOk");
+        resposta.put("localitzadors", localitzadors);
+        conn.send(resposta.toString());
+    }
+
+    private synchronized void processarCompraSQL(WebSocket conn, JSONObject peticio) {
+        String nom = peticio.optString("nom");
+        String correu = peticio.optString("correu");
+        JSONArray entrades = peticio.optJSONArray("entrades");
+        JSONArray seients = peticio.optJSONArray("seients");
+
+        boolean teEntrades = entrades != null && entrades.length() > 0;
+        boolean teSeients = seients != null && seients.length() > 0;
+
+        if (!teEntrades && !teSeients) {
+            enviarError(conn, "No hi ha entrades ni butaques a la cistella");
+            return;
+        }
+
+        // 1. Validem prèviament que les entrades generals tenen quota suficient
+        if (teEntrades) {
+            for (int i = 0; i < entrades.length(); i++) {
+                JSONObject linia = entrades.getJSONObject(i);
+                Esdeveniment esdeveniment = cataleg.getEsdeveniment(linia.optString("idEsdeveniment"));
+                TipusEntrada tipusEntrada = (esdeveniment != null)
+                        ? esdeveniment.getTipusEntrada(linia.optString("idTipus")) : null;
+
+                if (tipusEntrada == null || linia.optInt("quantitat") > tipusEntrada.getQuota()) {
+                    enviarError(conn, "No es poden reservar les entrades (quota insuficient)");
+                    return;
+                }
+            }
+        }
+
+        String sqlCompra = "INSERT INTO compres (localitzador_compra, nom_comprador, correu) VALUES (?, ?, ?)";
+        String sqlGetTipusId = "SELECT t.tipus_entrada_id, t.preu FROM tipus_entrada t " +
+                               "JOIN esdeveniments e ON t.esdeveniment_id = e.esdeveniment_id " +
+                               "WHERE e.codi = ? AND t.codi = ?";
+        String sqlCheckSeient = "SELECT COUNT(*) FROM entrades WHERE tipus_entrada_id = ? AND fila = ? AND seient = ?";
+        String sqlInsertEntrada = "INSERT INTO entrades (compra_id, tipus_entrada_id, localitzador_entrada, fila, seient, preu_pagat) " +
+                                  "VALUES (?, ?, ?, ?, ?, ?)";
+
+        Connection connection = null;
+        JSONArray localitzadors = new JSONArray();
+        JSONArray seientsRebutjats = new JSONArray();
+
+        try {
+            connection = BaseDades.getConnexio();
+            connection.setAutoCommit(false);
+
+            String localitzadorCompra = "LC-" + (10000000 + random.nextInt(90000000));
+            PreparedStatement psCompra = connection.prepareStatement(sqlCompra, Statement.RETURN_GENERATED_KEYS);
+            psCompra.setString(1, localitzadorCompra);
+            psCompra.setString(2, nom);
+            psCompra.setString(3, correu);
+            psCompra.executeUpdate();
+
+            ResultSet rsIdCompra = psCompra.getGeneratedKeys();
+            int idCompraGenerat = rsIdCompra.next() ? rsIdCompra.getInt(1) : 0;
+            rsIdCompra.close();
+            psCompra.close();
+
+            PreparedStatement psGetTipus = connection.prepareStatement(sqlGetTipusId);
+            PreparedStatement psCheckSeient = connection.prepareStatement(sqlCheckSeient);
+            PreparedStatement psEntrada = connection.prepareStatement(sqlInsertEntrada);
+
+            // 2. Processem les butaques numerades ("seients")
+            if (teSeients) {
+                for (int i = 0; i < seients.length(); i++) {
+                    JSONObject s = seients.getJSONObject(i);
+                    String idEsdeveniment = s.getString("idEsdeveniment");
+                    String idTipus = s.getString("idTipus");
+                    int fila = s.getInt("fila");
+                    int seient = s.getInt("seient");
+
+                    psGetTipus.setString(1, idEsdeveniment);
+                    psGetTipus.setString(2, idTipus);
+                    ResultSet rsTipus = psGetTipus.executeQuery();
+
+                    if (!rsTipus.next()) {
+                        rsTipus.close();
+                        seientsRebutjats.put(s);
+                        continue;
+                    }
+                    int tipusIdIntern = rsTipus.getInt("tipus_entrada_id");
+                    double preuPagat = rsTipus.getDouble("preu");
+                    rsTipus.close();
+
+                    // Comprovem si la butaca ja està venuda
+                    psCheckSeient.setInt(1, tipusIdIntern);
+                    psCheckSeient.setInt(2, fila);
+                    psCheckSeient.setInt(3, seient);
+                    ResultSet rsCheck = psCheckSeient.executeQuery();
+                    boolean ocupat = rsCheck.next() && rsCheck.getInt(1) > 0;
+                    rsCheck.close();
+
+                    if (ocupat) {
+                        seientsRebutjats.put(s);
+                    } else {
+                        String locEntrada = idEsdeveniment + "-" + (10000000 + random.nextInt(90000000));
+                        localitzadors.put(locEntrada);
+
+                        psEntrada.setInt(1, idCompraGenerat);
+                        psEntrada.setInt(2, tipusIdIntern);
+                        psEntrada.setString(3, locEntrada);
+                        psEntrada.setInt(4, fila);
+                        psEntrada.setInt(5, seient);
+                        psEntrada.setDouble(6, preuPagat);
+                        psEntrada.executeUpdate();
+                    }
+                }
+            }
+
+            // Si alguna butaca ja estava venuda, fem rollback de TOTA la compra i retornem seientsRebutjats
+            if (seientsRebutjats.length() > 0) {
+                psGetTipus.close();
+                psCheckSeient.close();
+                psEntrada.close();
+                connection.rollback();
+
+                JSONObject err = new JSONObject();
+                err.put("type", "error");
+                err.put("message", "Algunes butaques ja estan venudes");
+                err.put("seientsRebutjats", seientsRebutjats);
+                conn.send(err.toString());
+                return;
+            }
+
+            // 3. Processem les entrades generals ("entrades")
+            if (teEntrades) {
+                for (int i = 0; i < entrades.length(); i++) {
+                    JSONObject linia = entrades.getJSONObject(i);
+                    String idEsdeveniment = linia.getString("idEsdeveniment");
+                    String idTipus = linia.getString("idTipus");
+                    int quantitat = linia.getInt("quantitat");
+
+                    psGetTipus.setString(1, idEsdeveniment);
+                    psGetTipus.setString(2, idTipus);
+                    ResultSet rsTipusId = psGetTipus.executeQuery();
+
+                    int tipusEntradesIdIntern = 0;
+                    double preuPagat = 0.0;
+                    if (rsTipusId.next()) {
+                        tipusEntradesIdIntern = rsTipusId.getInt("tipus_entrada_id");
+                        preuPagat = rsTipusId.getDouble("preu");
+                    }
+                    rsTipusId.close();
+
+                    for (int j = 0; j < quantitat; j++) {
+                        String localitzadorEntrada = idEsdeveniment + "-" + (10000000 + random.nextInt(90000000));
+                        localitzadors.put(localitzadorEntrada);
+
+                        psEntrada.setInt(1, idCompraGenerat);
+                        psEntrada.setInt(2, tipusEntradesIdIntern);
+                        psEntrada.setString(3, localitzadorEntrada);
+                        psEntrada.setNull(4, java.sql.Types.INTEGER);
+                        psEntrada.setNull(5, java.sql.Types.INTEGER);
+                        psEntrada.setDouble(6, preuPagat);
+                        psEntrada.executeUpdate();
+                    }
+                }
+            }
+
+            psGetTipus.close();
+            psCheckSeient.close();
+            psEntrada.close();
+
+            // 4. Confirmem la transacció a la BD i actualitzem quotes en memòria
+            connection.commit();
+
+            if (teSeients) {
+                for (int i = 0; i < seients.length(); i++) {
+                    JSONObject s = seients.getJSONObject(i);
+                    cataleg.getEsdeveniment(s.getString("idEsdeveniment"))
+                           .getTipusEntrada(s.getString("idTipus")).restarQuota(1);
+                }
+            }
+            if (teEntrades) {
+                for (int i = 0; i < entrades.length(); i++) {
+                    JSONObject linia = entrades.getJSONObject(i);
+                    cataleg.getEsdeveniment(linia.getString("idEsdeveniment"))
+                           .getTipusEntrada(linia.getString("idTipus")).restarQuota(linia.getInt("quantitat"));
+                }
+            }
+
+            JSONObject resposta = new JSONObject();
+            resposta.put("type", "compraOk");
+            resposta.put("localitzadors", localitzadors);
+            conn.send(resposta.toString());
+
+        } catch (Exception e) {
+            if (connection != null) {
+                try { connection.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+            System.err.println("Error SQL en processar la compra: " + e.getMessage());
+            enviarError(conn, "No s'han pogut enregistrar les entrades a la base de dades");
+        } finally {
+            if (connection != null) {
+                try { connection.setAutoCommit(true); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+        }
+    }
+
+ 
+    // Afegeix una reserva a data/<id_esdeveniment>.json (el crea si no existeix)
+    private void desarReserva(String idEsde, JSONObject reserva) throws IOException {
+        File fitxer = new File("data", idEsde + ".json");
+        JSONArray reserves = new JSONArray();
+        if (fitxer.exists()) {
+            reserves = new JSONArray(Files.readString(fitxer.toPath(), StandardCharsets.UTF_8));
+        }
+        reserves.put(reserva);
+        Files.writeString(fitxer.toPath(), reserves.toString(2), StandardCharsets.UTF_8);
+    }
+
+    private void enviarError(WebSocket conn, String text) {
+        JSONObject error = new JSONObject();
+        error.put("type", "error");
+        error.put("message", text);
+        conn.send(error.toString());
+    }
+}

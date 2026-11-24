@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cataleg>
+  <!-- Recintes amb les seves zones -->
+  <recintes>
+    <recinte id="R1" nom="Sala Petita">
+      <!-- Escenari 1 -->
+      <zona id="Z1_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z1_CEN" nom="Platea Central" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z1_DRE" nom="Platea Dreta" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="12"/>
+      <zona id="Z1_2" nom="Dempeus" tipus="general" aforament="40"/>
+    </recinte>
+    <recinte id="R2" nom="Teatre Principal">
+      <!-- Escenari 2 -->
+      <zona id="Z2_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z2_DRE" nom="Platea Dreta" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+    </recinte>
+    <recinte id="R3" nom="Auditori Municipal">
+      <!-- Escenari 3 -->
+      <zona id="Z3_CEN" nom="Platea Central" tipus="numerada" aforament="25" num_files="5" seients_per_fila="5" fila_inici="0" columna_inici="0"/>
+    </recinte>
+    <recinte id="R4" nom="Espai Jove">
+      <!-- Escenari 1 -->
+      <zona id="Z4_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z4_CEN" nom="Platea Central" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z4_DRE" nom="Platea Dreta" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="12"/>
+      <zona id="Z4_1" nom="Pista Central" tipus="general" aforament="300"/>
+    </recinte>
+    <recinte id="R5" nom="Palau de Congressos">
+      <!-- Escenari 2 -->
+      <zona id="Z5_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z5_DRE" nom="Platea Dreta" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+    </recinte>
+    <recinte id="R6" nom="Sala Rock &amp; Live">
+      <!-- Escenari 3 -->
+      <zona id="Z6_CEN" nom="Platea Central" tipus="numerada" aforament="25" num_files="5" seients_per_fila="5" fila_inici="0" columna_inici="0"/>
+      <zona id="Z6_1" nom="Pista Dempeus" tipus="general" aforament="250"/>
+    </recinte>
+    <recinte id="R7" nom="Teatre de l'Artesà">
+      <!-- Escenari 1 -->
+      <zona id="Z7_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z7_CEN" nom="Platea Central" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z7_DRE" nom="Platea Dreta" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="12"/>
+    </recinte>
+    <recinte id="R8" nom="Estadi Municipal">
+      <!-- Escenari 2 -->
+      <zona id="Z8_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z8_DRE" nom="Platea Dreta" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z8_2" nom="Grada General" tipus="general" aforament="2000"/>
+    </recinte>
+    <recinte id="R9" nom="Ateneu Cultural">
+      <!-- Escenari 3 -->
+      <zona id="Z9_CEN" nom="Platea Central" tipus="numerada" aforament="25" num_files="5" seients_per_fila="5" fila_inici="0" columna_inici="0"/>
+    </recinte>
+    <recinte id="R10" nom="Pavelló d'Esports">
+      <!-- Escenari 1 -->
+      <zona id="Z10_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z10_CEN" nom="Platea Central" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z10_DRE" nom="Platea Dreta" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="12"/>
+      <zona id="Z10_1" nom="Pista" tipus="general" aforament="600"/>
+    </recinte>
+    <recinte id="R11" nom="Cine Club Paradiso">
+      <!-- Escenari 2 -->
+      <zona id="Z11_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z11_DRE" nom="Platea Dreta" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+    </recinte>
+    <recinte id="R12" nom="La Factoria Cultural">
+      <!-- Escenari 3 -->
+      <zona id="Z12_CEN" nom="Platea Central" tipus="numerada" aforament="25" num_files="5" seients_per_fila="5" fila_inici="0" columna_inici="0"/>
+      <zona id="Z12_1" nom="Nau Central" tipus="general" aforament="350"/>
+    </recinte>
+    <recinte id="R13" nom="Auditori de la Música">
+      <!-- Escenari 1 -->
+      <zona id="Z13_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z13_CEN" nom="Platea Central" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z13_DRE" nom="Platea Dreta" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="12"/>
+    </recinte>
+    <recinte id="R14" nom="Teatre de Titelles">
+      <!-- Escenari 2 -->
+      <zona id="Z14_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z14_DRE" nom="Platea Dreta" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z14_1" nom="Zona Infantil" tipus="general" aforament="50"/>
+    </recinte>
+    <recinte id="R15" nom="Sala Jazz Underground">
+      <!-- Escenari 3 -->
+      <zona id="Z15_CEN" nom="Platea Central" tipus="numerada" aforament="25" num_files="5" seients_per_fila="5" fila_inici="0" columna_inici="0"/>
+      <zona id="Z15_2" nom="Barra" tipus="general" aforament="30"/>
+    </recinte>
+    <recinte id="R16" nom="Espai a l'Aire Lliure">
+      <!-- Escenari 1 -->
+      <zona id="Z16_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z16_CEN" nom="Platea Central" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z16_DRE" nom="Platea Dreta" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="12"/>
+      <zona id="Z16_1" nom="Gespa" tipus="general" aforament="500"/>
+    </recinte>
+    <recinte id="R17" nom="Claustre del Monestir">
+      <!-- Escenari 2 -->
+      <zona id="Z17_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z17_DRE" nom="Platea Dreta" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+    </recinte>
+    <recinte id="R18" nom="Teatre l'Amistat">
+      <!-- Escenari 3 -->
+      <zona id="Z18_CEN" nom="Platea Central" tipus="numerada" aforament="25" num_files="5" seients_per_fila="5" fila_inici="0" columna_inici="0"/>
+    </recinte>
+    <recinte id="R19" nom="Multiespai i Fira">
+      <!-- Escenari 1 -->
+      <zona id="Z19_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z19_CEN" nom="Platea Central" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z19_DRE" nom="Platea Dreta" tipus="numerada" aforament="16" num_files="4" seients_per_fila="4" fila_inici="0" columna_inici="12"/>
+      <zona id="Z19_1" nom="Pavelló 1" tipus="general" aforament="800"/>
+    </recinte>
+    <recinte id="R20" nom="Sala de Microteatre">
+      <!-- Escenari 2 -->
+      <zona id="Z20_ESQ" nom="Platea Esquerra" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="0"/>
+      <zona id="Z20_DRE" nom="Platea Dreta" tipus="numerada" aforament="20" num_files="5" seients_per_fila="4" fila_inici="0" columna_inici="6"/>
+      <zona id="Z20_1" nom="Espai Únic" tipus="general" aforament="25"/>
+    </recinte>
+  </recintes>
+
+  <!-- Esdeveniments: cadascun indica el recinte on es fa -->
+  <esdeveniments>
+    <!-- Esdeveniments per a R1 (Sala Petita) -->
+    <esdeveniment id="E1" recinte="R1">
+      <nom>Coses que no es diuen en un sopar</nom>
+      <dataHora>2026-11-21 21:30</dataHora>
+      <categoria>Monòleg</categoria>
+      <descripcio>Una hora d'humor sobre les converses incòmodes de cada dia.</descripcio>
+      <imatge>monoleg-sopar.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T1_3" nom="Dempeus" zona="Z1_2" preu="12.00" quota="40"/>
+        <tipusEntrada id="T1_ESQ" nom="Platea Esquerra" zona="Z1_ESQ" preu="18.00" quota="16"/>
+        <tipusEntrada id="T1_CEN" nom="Platea Central" zona="Z1_CEN" preu="18.00" quota="20"/>
+        <tipusEntrada id="T1_DRE" nom="Platea Dreta" zona="Z1_DRE" preu="18.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E2" recinte="R1">
+      <nom>Nits de Poesia i Jazz</nom>
+      <dataHora>2026-12-05 20:00</dataHora>
+      <categoria>Poesia</categoria>
+      <descripcio>Recital poètic acompanyat de piano i contrabaix en acústic.</descripcio>
+      <imatge>poesia-jazz.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T2_2" nom="Dempeus General" zona="Z1_2" preu="10.00" quota="40"/>
+        <tipusEntrada id="T2_ESQ" nom="Platea Esquerra" zona="Z1_ESQ" preu="15.00" quota="16"/>
+        <tipusEntrada id="T2_CEN" nom="Platea Central" zona="Z1_CEN" preu="15.00" quota="20"/>
+        <tipusEntrada id="T2_DRE" nom="Platea Dreta" zona="Z1_DRE" preu="15.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R2 (Teatre Principal) -->
+    <esdeveniment id="E3" recinte="R2">
+      <nom>Romeu i Julieta</nom>
+      <dataHora>2026-11-28 19:00</dataHora>
+      <categoria>Teatre</categoria>
+      <descripcio>El clàssic de Shakespeare adaptat a l'època contemporània.</descripcio>
+      <imatge>romeu-julieta.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T3_ESQ" nom="Platea Esquerra" zona="Z2_ESQ" preu="25.00" quota="20"/>
+        <tipusEntrada id="T3_DRE" nom="Platea Dreta" zona="Z2_DRE" preu="25.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E4" recinte="R2">
+      <nom>Gala de Dansa Clàssica</nom>
+      <dataHora>2026-12-19 18:30</dataHora>
+      <categoria>Dansa</categoria>
+      <descripcio>Espectacle amb les millors peces del ballet internacional.</descripcio>
+      <imatge>gala-ballet.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T4_ESQ" nom="Platea Esquerra" zona="Z2_ESQ" preu="30.00" quota="20"/>
+        <tipusEntrada id="T4_DRE" nom="Platea Dreta" zona="Z2_DRE" preu="30.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R3 (Auditori Municipal) -->
+    <esdeveniment id="E5" recinte="R3">
+      <nom>La Novena de Beethoven</nom>
+      <dataHora>2026-12-23 20:30</dataHora>
+      <categoria>Música Clàssica</categoria>
+      <descripcio>Concert de Nadal a càrrec de l'Orquestra Simfònica del Vallès.</descripcio>
+      <imatge>beethoven-novena.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T5_CEN" nom="Platea Central" zona="Z3_CEN" preu="40.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E6" recinte="R3">
+      <nom>Recital de Piano Solo</nom>
+      <dataHora>2026-12-04 19:30</dataHora>
+      <categoria>Música Clàssica</categoria>
+      <descripcio>Un repàs íntim als nocturns de Chopin de la mano d'un virtuós internacional.</descripcio>
+      <imatge>piano-solo.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T6_CEN" nom="Platea Central" zona="Z3_CEN" preu="25.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R4 (Espai Jove) -->
+    <esdeveniment id="E7" recinte="R4">
+      <nom>Batalla de Bandes Locals</nom>
+      <dataHora>2026-11-14 18:00</dataHora>
+      <categoria>Concert</categoria>
+      <descripcio>Descobreix el talent emergent de la ciutat en aquesta final en directe.</descripcio>
+      <imatge>batalla-bandes.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T7_1" nom="Entrada Única" zona="Z4_1" preu="5.00" quota="300"/>
+        <tipusEntrada id="T7_ESQ" nom="Platea Esquerra" zona="Z4_ESQ" preu="15.00" quota="16"/>
+        <tipusEntrada id="T7_CEN" nom="Platea Central" zona="Z4_CEN" preu="15.00" quota="20"/>
+        <tipusEntrada id="T7_DRE" nom="Platea Dreta" zona="Z4_DRE" preu="15.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E8" recinte="R4">
+      <nom>Festa de Cap d'Any Jove</nom>
+      <dataHora>2026-12-31 23:30</dataHora>
+      <categoria>Festa</categoria>
+      <descripcio>Donem la benvinguda al 2027 amb els millors DJ locals.</descripcio>
+      <imatge>cap-dany.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T8_1" nom="Anticipada" zona="Z4_1" preu="15.00" quota="300"/>
+        <tipusEntrada id="T8_ESQ" nom="Platea Esquerra" zona="Z4_ESQ" preu="15.00" quota="16"/>
+        <tipusEntrada id="T8_CEN" nom="Platea Central" zona="Z4_CEN" preu="15.00" quota="20"/>
+        <tipusEntrada id="T8_DRE" nom="Platea Dreta" zona="Z4_DRE" preu="15.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R5 (Palau de Congressos) -->
+    <esdeveniment id="E9" recinte="R5">
+      <nom>Congrés de Tecnologia i IA 2026</nom>
+      <dataHora>2026-11-25 09:00</dataHora>
+      <categoria>Conferència</categoria>
+      <descripcio>Les darreres tendències tecnològiques explicades per experts internacionals.</descripcio>
+      <imatge>tech-ia.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T9_ESQ" nom="Platea Esquerra" zona="Z5_ESQ" preu="120.00" quota="20"/>
+        <tipusEntrada id="T9_DRE" nom="Platea Dreta" zona="Z5_DRE" preu="120.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E10" recinte="R5">
+      <nom>Xerrada: Història de l'Art Local</nom>
+      <dataHora>2026-11-19 19:00</dataHora>
+      <categoria>Conferència</categoria>
+      <descripcio>Un recorregut visual pels edificis històrics més emblemàtics.</descripcio>
+      <imatge>historia-art.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T10_ESQ" nom="Platea Esquerra" zona="Z5_ESQ" preu="10.00" quota="20"/>
+        <tipusEntrada id="T10_DRE" nom="Platea Dreta" zona="Z5_DRE" preu="10.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R6 (Sala Rock &amp; Live) -->
+    <esdeveniment id="E11" recinte="R6">
+      <nom>The Rock On Tour</nom>
+      <dataHora>2026-11-20 22:00</dataHora>
+      <categoria>Concert</categoria>
+      <descripcio>Concert en directe de la mítica banda de rock dels noranta.</descripcio>
+      <imatge>rock-tour.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T11_1" nom="Pista General" zona="Z6_1" preu="22.00" quota="250"/>
+        <tipusEntrada id="T11_CEN" nom="Platea Central" zona="Z6_CEN" preu="35.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E12" recinte="R6">
+      <nom>Tribut a Queen</nom>
+      <dataHora>2026-12-11 21:30</dataHora>
+      <categoria>Concert</categoria>
+      <descripcio>El millor xou d'homenatge a Freddie Mercury i companyia.</descripcio>
+      <imatge>tribut-queen.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T12_1" nom="Pista" zona="Z6_1" preu="18.00" quota="250"/>
+        <tipusEntrada id="T12_CEN" nom="Platea Central" zona="Z6_CEN" preu="28.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R7 (Teatre de l'Artesà) -->
+    <esdeveniment id="E13" recinte="R7">
+      <nom>Terra Baixa</nom>
+      <dataHora>2026-11-15 18:00</dataHora>
+      <categoria>Teatre</categoria>
+      <descripcio>L'obra d'Àngel Guimerà reversionada amb una posada en escena trencadora.</descripcio>
+      <imatge>terra-baixa.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T13_ESQ" nom="Platea Esquerra" zona="Z7_ESQ" preu="16.00" quota="16"/>
+        <tipusEntrada id="T13_CEN" nom="Platea Central" zona="Z7_CEN" preu="16.00" quota="20"/>
+        <tipusEntrada id="T13_DRE" nom="Platea Dreta" zona="Z7_DRE" preu="16.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E14" recinte="R7">
+      <nom>El Trencollaons: Teatre de Comèdia</nom>
+      <dataHora>2026-12-05 21:00</dataHora>
+      <categoria>Teatre</categoria>
+      <descripcio>Una comèdia d'embolics que et farà riure des del primer minut.</descripcio>
+      <imatge>trencollaons-comedia.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T14_ESQ" nom="Platea Esquerra" zona="Z7_ESQ" preu="20.00" quota="16"/>
+        <tipusEntrada id="T14_CEN" nom="Platea Central" zona="Z7_CEN" preu="20.00" quota="20"/>
+        <tipusEntrada id="T14_DRE" nom="Platea Dreta" zona="Z7_DRE" preu="20.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R8 (Estadi Municipal) -->
+    <esdeveniment id="E15" recinte="R8">
+      <nom>Derbi de Futbol Regional</nom>
+      <dataHora>2026-11-22 12:00</dataHora>
+      <categoria>Esports</categoria>
+      <descripcio>Partit corresponent a la jornada 12 de la lliga local.</descripcio>
+      <imatge>derbi-futbol.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T15_2" nom="Grada General" zona="Z8_2" preu="15.00" quota="2000"/>
+        <tipusEntrada id="T15_ESQ" nom="Platea Esquerra" zona="Z8_ESQ" preu="20.00" quota="20"/>
+        <tipusEntrada id="T15_DRE" nom="Platea Dreta" zona="Z8_DRE" preu="20.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E16" recinte="R8">
+      <nom>Meeting d'Atletisme Ciutat de Cornellà</nom>
+      <dataHora>2026-12-06 10:00</dataHora>
+      <categoria>Esports</categoria>
+      <descripcio>Proves de velocitat, fons i salts amb atletes convidats.</descripcio>
+      <imatge>atletisme-meeting.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T16_2" nom="Grada General" zona="Z8_2" preu="15.00" quota="2000"/>
+        <tipusEntrada id="T16_ESQ" nom="Platea Esquerra" zona="Z8_ESQ" preu="20.00" quota="20"/>
+        <tipusEntrada id="T16_DRE" nom="Platea Dreta" zona="Z8_DRE" preu="20.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R9 (Ateneu Cultural) -->
+    <esdeveniment id="E17" recinte="R9">
+      <nom>Cicle Cinema d'Autor: Els Clàssics</nom>
+      <dataHora>2026-11-18 20:00</dataHora>
+      <categoria>Cinema</categoria>
+      <descripcio>Projecció en versió original subtitulada del film "Metropolis".</descripcio>
+      <imatge>cinema-metropolis.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T17_CEN" nom="Platea Central" zona="Z9_CEN" preu="6.50" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E18" recinte="R9">
+      <nom>Fira del Disc de Col·leccionista</nom>
+      <dataHora>2026-12-13 10:00</dataHora>
+      <categoria>Fira</categoria>
+      <descripcio>Compra i venda de vinils, CD i marxandatge musical.</descripcio>
+      <imatge>fira-disc.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T18_CEN" nom="Platea Central" zona="Z9_CEN" preu="3.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R10 (Pavelló d'Esports) -->
+    <esdeveniment id="E19" recinte="R10">
+      <nom>Final Cup de Bàsquet</nom>
+      <dataHora>2026-11-29 17:30</dataHora>
+      <categoria>Esports</categoria>
+      <descripcio>La gran final del torneig d'hivern de bàsquet masculí.</descripcio>
+      <imatge>basquet-final.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T19_1" nom="Pista" zona="Z10_1" preu="12.00" quota="600"/>
+        <tipusEntrada id="T19_ESQ" nom="Platea Esquerra" zona="Z10_ESQ" preu="10.00" quota="16"/>
+        <tipusEntrada id="T19_CEN" nom="Platea Central" zona="Z10_CEN" preu="10.00" quota="20"/>
+        <tipusEntrada id="T19_DRE" nom="Platea Dreta" zona="Z10_DRE" preu="10.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E20" recinte="R10">
+      <nom>Exhibició de Gimnàstica Rítmica</nom>
+      <dataHora>2026-12-20 11:00</dataHora>
+      <categoria>Esports</categoria>
+      <descripcio>Mostra de Nadal dels conjunts de totes les categories.</descripcio>
+      <imatge>gimnastica-ritmica.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T20_1" nom="Pista" zona="Z10_1" preu="8.00" quota="600"/>
+        <tipusEntrada id="T20_ESQ" nom="Platea Esquerra" zona="Z10_ESQ" preu="6.00" quota="16"/>
+        <tipusEntrada id="T20_CEN" nom="Platea Central" zona="Z10_CEN" preu="6.00" quota="20"/>
+        <tipusEntrada id="T20_DRE" nom="Platea Dreta" zona="Z10_DRE" preu="6.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R11 (Cine Club Paradiso) -->
+    <esdeveniment id="E21" recinte="R11">
+      <nom>Cinema a la Fresca d'Hivern</nom>
+      <dataHora>2026-12-12 19:00</dataHora>
+      <categoria>Cinema</categoria>
+      <descripcio>Porta la teva manta! Projecció de pel·lícules de Nadal amb xocolata desfeta.</descripcio>
+      <imatge>cinema-fresca.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T21_ESQ" nom="Platea Esquerra" zona="Z11_ESQ" preu="7.00" quota="20"/>
+        <tipusEntrada id="T21_DRE" nom="Platea Dreta" zona="Z11_DRE" preu="7.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E22" recinte="R11">
+      <nom>Mercat d'Artesania Sostenible</nom>
+      <dataHora>2026-12-20 10:00</dataHora>
+      <categoria>Fira</categoria>
+      <descripcio>Productes fets a mà, locals i respectuosos amb el medi ambient.</descripcio>
+      <imatge>mercat-artesania.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T22_ESQ" nom="Platea Esquerra" zona="Z11_ESQ" preu="2.00" quota="20"/>
+        <tipusEntrada id="T22_DRE" nom="Platea Dreta" zona="Z11_DRE" preu="2.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R12 (La Factoria Cultural) -->
+    <esdeveniment id="E23" recinte="R12">
+      <nom>Fira del Videojoc i Gaming 2026</nom>
+      <dataHora>2026-11-14 10:00</dataHora>
+      <categoria>Fira</categoria>
+      <descripcio>Provatures de noves consoles, tornejos eSports i zones retro.</descripcio>
+      <imatge>fira-gaming.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T23_1" nom="General" zona="Z12_1" preu="10.00" quota="350"/>
+        <tipusEntrada id="T23_CEN" nom="Platea Central" zona="Z12_CEN" preu="15.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E24" recinte="R12">
+      <nom>Saló del Còmic i l'Anime</nom>
+      <dataHora>2026-12-12 10:00</dataHora>
+      <categoria>Fira</categoria>
+      <descripcio>Concursos de Cosplay, signatures d'autors i marxandatge variat.</descripcio>
+      <imatge>salo-comic.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T24_1" nom="General" zona="Z12_1" preu="12.00" quota="350"/>
+        <tipusEntrada id="T24_CEN" nom="Platea Central" zona="Z12_CEN" preu="15.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R13 (Auditori de la Música) -->
+    <esdeveniment id="E25" recinte="R13">
+      <nom>Concert d'Estiu Tardà: Indie Pop</nom>
+      <dataHora>2026-11-08 16:00</dataHora>
+      <categoria>Concert</categoria>
+      <descripcio>Festival de música independent a l'aire lliure amb Food Trucks.</descripcio>
+      <imatge>indie-festival.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T25_ESQ" nom="Platea Esquerra" zona="Z13_ESQ" preu="25.00" quota="16"/>
+        <tipusEntrada id="T25_CEN" nom="Platea Central" zona="Z13_CEN" preu="25.00" quota="20"/>
+        <tipusEntrada id="T25_DRE" nom="Platea Dreta" zona="Z13_DRE" preu="25.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E26" recinte="R13">
+      <nom>Cants Gregoris sota les Estrelles</nom>
+      <dataHora>2026-11-13 20:30</dataHora>
+      <categoria>Música Clàssica</categoria>
+      <descripcio>Una experiència mística amb la coral del monestir sota la llum de les espelmes.</descripcio>
+      <imatge>cants-gregoris.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T26_ESQ" nom="Platea Esquerra" zona="Z13_ESQ" preu="30.00" quota="16"/>
+        <tipusEntrada id="T26_CEN" nom="Platea Central" zona="Z13_CEN" preu="30.00" quota="20"/>
+        <tipusEntrada id="T26_DRE" nom="Platea Dreta" zona="Z13_DRE" preu="30.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R14 (Teatre de Titelles) -->
+    <esdeveniment id="E27" recinte="R14">
+      <nom>Les Aventures d'en Patufet</nom>
+      <dataHora>2026-11-15 11:30</dataHora>
+      <categoria>Infantil</categoria>
+      <descripcio>Espectacle de titelles tradicional per a nens i nenes de 2 a 7 anys.</descripcio>
+      <imatge>titelles-patufet.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T27_1" nom="Entrada Infantil" zona="Z14_1" preu="6.00" quota="50"/>
+        <tipusEntrada id="T27_ESQ" nom="Platea Esquerra" zona="Z14_ESQ" preu="15.00" quota="20"/>
+        <tipusEntrada id="T27_DRE" nom="Platea Dreta" zona="Z14_DRE" preu="15.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E28" recinte="R14">
+      <nom>El Patge Reial Visita el Teatre</nom>
+      <dataHora>2026-12-28 17:00</dataHora>
+      <categoria>Infantil</categoria>
+      <descripcio>Vine a lliurar la teva carta i gaudeix d'una petita història màgica.</descripcio>
+      <imatge>patge-reial.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T28_1" nom="Entrada lliure" zona="Z14_1" preu="0.00" quota="50"/>
+        <tipusEntrada id="T28_ESQ" nom="Platea Esquerra" zona="Z14_ESQ" preu="15.00" quota="20"/>
+        <tipusEntrada id="T28_DRE" nom="Platea Dreta" zona="Z14_DRE" preu="15.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R15 (Sala Jazz Underground) -->
+    <esdeveniment id="E29" recinte="R15">
+      <nom>Late Night Jazz Quartet</nom>
+      <dataHora>2026-11-27 23:00</dataHora>
+      <categoria>Concert</categoria>
+      <descripcio>Sessió de jazz clàssic nocturn amb beguda inclosa.</descripcio>
+      <imatge>jazz-quartet.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T29_2" nom="Accés Barra" zona="Z15_2" preu="12.00" quota="30"/>
+        <tipusEntrada id="T29_CEN" nom="Platea Central" zona="Z15_CEN" preu="20.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E30" recinte="R15">
+      <nom>Càpsules Històriques: 15 minuts</nom>
+      <dataHora>2026-11-20 19:30</dataHora>
+      <categoria>Teatre</categoria>
+      <descripcio>Teatre en format ultra-curt a menys d'un metre dels actors.</descripcio>
+      <imatge>microteatre-capsula.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T30_2" nom="General Barra" zona="Z15_2" preu="10.00" quota="30"/>
+        <tipusEntrada id="T30_CEN" nom="Platea Central" zona="Z15_CEN" preu="15.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R16 (Espai a l'Aire Lliure) -->
+    <esdeveniment id="E31" recinte="R16">
+      <nom>Festival de Música Natura</nom>
+      <dataHora>2026-11-10 17:00</dataHora>
+      <categoria>Concert</categoria>
+      <descripcio>Música acústica en un entorn verd i relaxant.</descripcio>
+      <imatge>musica-natura.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T31_1" nom="Gespa General" zona="Z16_1" preu="15.00" quota="500"/>
+        <tipusEntrada id="T31_ESQ" nom="Platea Esquerra" zona="Z16_ESQ" preu="15.00" quota="16"/>
+        <tipusEntrada id="T31_CEN" nom="Platea Central" zona="Z16_CEN" preu="15.00" quota="20"/>
+        <tipusEntrada id="T31_DRE" nom="Platea Dreta" zona="Z16_DRE" preu="15.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E32" recinte="R16">
+      <nom>Ioga a la Fresca</nom>
+      <dataHora>2026-11-17 09:30</dataHora>
+      <categoria>Esports</categoria>
+      <descripcio>Sessió matinal de ioga a l'aire lliure per connectar amb la natura.</descripcio>
+      <imatge>ioga-fresca.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T32_1" nom="Accés Gespa" zona="Z16_1" preu="5.00" quota="500"/>
+        <tipusEntrada id="T32_ESQ" nom="Platea Esquerra" zona="Z16_ESQ" preu="15.00" quota="16"/>
+        <tipusEntrada id="T32_CEN" nom="Platea Central" zona="Z16_CEN" preu="15.00" quota="20"/>
+        <tipusEntrada id="T32_DRE" nom="Platea Dreta" zona="Z16_DRE" preu="15.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R17 (Claustre del Monestir) -->
+    <esdeveniment id="E33" recinte="R17">
+      <nom>Concert de Guitarra Clàssica</nom>
+      <dataHora>2026-11-24 19:00</dataHora>
+      <categoria>Música Clàssica</categoria>
+      <descripcio>Melodies tradicionals interpretades sota els arcs del claustre medieval.</descripcio>
+      <imatge>guitarra-claustre.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T33_ESQ" nom="Platea Esquerra" zona="Z17_ESQ" preu="18.00" quota="20"/>
+        <tipusEntrada id="T33_DRE" nom="Platea Dreta" zona="Z17_DRE" preu="18.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E34" recinte="R17">
+      <nom>Lectura de Poemes de Tardor</nom>
+      <dataHora>2026-11-30 18:30</dataHora>
+      <categoria>Poesia</categoria>
+      <descripcio>Vetllada literària amb acompanyament de violoncel acústic.</descripcio>
+      <imatge>poemes-tardor.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T34_ESQ" nom="Platea Esquerra" zona="Z17_ESQ" preu="12.00" quota="20"/>
+        <tipusEntrada id="T34_DRE" nom="Platea Dreta" zona="Z17_DRE" preu="12.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R18 (Teatre l'Amistat) -->
+    <esdeveniment id="E35" recinte="R18">
+      <nom>L'Avar de Molière</nom>
+      <dataHora>2026-11-12 20:00</dataHora>
+      <categoria>Teatre</categoria>
+      <descripcio>Adaptació dinàmica i satírica d'una de les obres mestres de la comèdia clàssica.</descripcio>
+      <imatge>avar-moliere.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T35_CEN" nom="Platea Central" zona="Z18_CEN" preu="22.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E36" recinte="R18">
+      <nom>Monòlegs de Nit</nom>
+      <dataHora>2026-12-18 22:30</dataHora>
+      <categoria>Monòleg</categoria>
+      <descripcio>Sessió de stand-up comedy amb còmics reconeguts de la televisió.</descripcio>
+      <imatge>monolegs-nit.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T36_CEN" nom="Platea Central" zona="Z18_CEN" preu="16.00" quota="25"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R19 (Multiespai i Fira) -->
+    <esdeveniment id="E37" recinte="R19">
+      <nom>Fira de l'Automòbil d'Ocasió</nom>
+      <dataHora>2026-11-06 10:00</dataHora>
+      <categoria>Fira</categoria>
+      <descripcio>Exposició i venda de vehicles kilómetre zero i d'ocasió amb grans descomptes.</descripcio>
+      <imatge>fira-auto.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T37_1" nom="Pavelló 1" zona="Z19_1" preu="5.00" quota="800"/>
+        <tipusEntrada id="T37_ESQ" nom="Platea Esquerra" zona="Z19_ESQ" preu="15.00" quota="16"/>
+        <tipusEntrada id="T37_CEN" nom="Platea Central" zona="Z19_CEN" preu="15.00" quota="20"/>
+        <tipusEntrada id="T37_DRE" nom="Platea Dreta" zona="Z19_DRE" preu="15.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E38" recinte="R19">
+      <nom>Saló de la Infància i de Nadal</nom>
+      <dataHora>2026-12-26 11:00</dataHora>
+      <categoria>Infantil</categoria>
+      <descripcio>Activitats, inflables, tallers i jocs per a tota la família durant les vacances.</descripcio>
+      <imatge>salo-infancia.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T38_1" nom="Pavelló 1" zona="Z19_1" preu="8.00" quota="800"/>
+        <tipusEntrada id="T38_ESQ" nom="Platea Esquerra" zona="Z19_ESQ" preu="15.00" quota="16"/>
+        <tipusEntrada id="T38_CEN" nom="Platea Central" zona="Z19_CEN" preu="15.00" quota="20"/>
+        <tipusEntrada id="T38_DRE" nom="Platea Dreta" zona="Z19_DRE" preu="15.00" quota="16"/>
+      </tipusEntrades>
+    </esdeveniment>
+
+    <!-- Esdeveniments per a R20 (Sala de Microteatre) -->
+    <esdeveniment id="E39" recinte="R20">
+      <nom>Històries de Tren: Microteatre</nom>
+      <dataHora>2026-11-11 20:00</dataHora>
+      <categoria>Teatre</categoria>
+      <descripcio>Tres peces breus interpretades de forma simultània i molt propera.</descripcio>
+      <imatge>tren-microteatre.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T39_1" nom="Espai Únic" zona="Z20_1" preu="9.00" quota="25"/>
+        <tipusEntrada id="T39_ESQ" nom="Platea Esquerra" zona="Z20_ESQ" preu="15.00" quota="20"/>
+        <tipusEntrada id="T39_DRE" nom="Platea Dreta" zona="Z20_DRE" preu="15.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+    <esdeveniment id="E40" recinte="R20">
+      <nom>Amors de Barra: Microteatre</nom>
+      <dataHora>2026-11-25 20:30</dataHora>
+      <categoria>Teatre</categoria>
+      <descripcio>Comèdia romàntica minimalista on el públic forma part de l'escenografia.</descripcio>
+      <imatge>amors-barra.jpg</imatge>
+      <tipusEntrades>
+        <tipusEntrada id="T40_1" nom="Espai Únic" zona="Z20_1" preu="9.00" quota="25"/>
+        <tipusEntrada id="T40_ESQ" nom="Platea Esquerra" zona="Z20_ESQ" preu="15.00" quota="20"/>
+        <tipusEntrada id="T40_DRE" nom="Platea Dreta" zona="Z20_DRE" preu="15.00" quota="20"/>
+      </tipusEntrades>
+    </esdeveniment>
+  </esdeveniments>
+</cataleg>
